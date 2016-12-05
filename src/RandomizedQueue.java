@@ -1,3 +1,6 @@
+import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.StdRandom;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -21,17 +24,13 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     private int n;
 
     private class RandomizedQueueIterator implements Iterator<Item> {
-
-        public boolean hasNext() {
-            // TODO - RandomizedQueueIterator.hasNext()
-            return false;
-        }
+        private int i = 0;
+        public boolean hasNext() { return i < n; }
         public void remove() { throw new UnsupportedOperationException("remove() operation is not supported."); }
 
         public Item next() {
-            // TODO - RandomizedQueueIterator.next()
             if (!hasNext()) throw new NoSuchElementException();
-            return items[0];
+            return items[i++];
         }
     }
 
@@ -39,17 +38,20 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      * construct an empty randomized queue
      */
     public RandomizedQueue() {
-        // TODO - RandomizedQueue constructor
+        items = (Item[]) new Object[2];
+        n = 0;
     }
 
     /**
-     * is randomized queue empty?
-     *
-     * @return
+     * Is this stack empty?
+     * @return true if this stack is empty; false otherwise
      */
-    public boolean isEmpty() {
-        // TODO - isEmpty()
-        return false;
+    public boolean isEmpty() { return n == 0; }
+
+    // resize the underlying array holding the elements
+    private void resize(int capacity) {
+        assert capacity >= n;
+        items = java.util.Arrays.copyOf(items, capacity);
     }
 
     /**
@@ -57,10 +59,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      *
      * @return
      */
-    public int size() {
-        // TODO - size()
-        return 1;
-    }
+    public int size() { return n; }
 
     /**
      * add an item to the queue
@@ -68,18 +67,47 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      * @param item
      */
     public void enqueue(Item item) {
-        // TODO - enqueue()
         if (item == null) throw new NullPointerException("should not add null item.");
+        if (n == items.length) resize(2*items.length);  // double size of array if necessary
+        items[n++] = item;                              // add item
     }
 
     /**
      * remove and return a random item
+     *
      * @return
      */
     public Item dequeue() {
-        // TODO - dequeue
         if (isEmpty()) throw new NoSuchElementException("cannot remove from empty Deque.");
-        return items[0];
+        StdOut.print("before: ");
+        printItems();
+        int k = StdRandom.uniform(n);
+        assert k >= 0 && k <= items.length;
+        Item item = items[k];
+        StdOut.printf("Item to remove, items[%d]: %s\n", k, item);
+        items[k] = null; // avoids loitering
+        n--;
+        rearrangeAt(k);
+        StdOut.print("after: ");
+        printItems();
+        // shrink size of array if necessary
+        if (n > 0 && n == items.length / 4) resize(items.length / 2);
+        return item;
+    }
+
+    private void rearrangeAt(int k) {
+        for (int i = k; i < n; i++) {
+            items[i] = items[i + 1];
+        }
+    }
+
+    private void printItems() {
+        StdOut.print("[");
+        for (int i = 0; i < n; i++) {
+            StdOut.print(items[i] + " ");
+        }
+        StdOut.print("]");
+        StdOut.println();
     }
 
     /**
@@ -88,9 +116,8 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      * @return
      */
     public Item sample() {
-        // TODO - sample
         if (isEmpty()) throw new NoSuchElementException("cannot remove from empty Deque.");
-        return items[0];
+        return items[StdRandom.uniform(n)];
     }
 
     /**
@@ -98,9 +125,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      *
      * @return
      */
-    public Iterator<Item> iterator() {
-        return new RandomizedQueueIterator();
-    }
+    public Iterator<Item> iterator() { return new RandomizedQueueIterator(); }
 
     /**
      * implement unit testing
@@ -109,5 +134,23 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      */
     public static void main(String[] args) {
         // TODO - unit testings
+        RandomizedQueue<Integer> queue = new RandomizedQueue<>();
+        TestRandomizedQueue<Integer> intQueueTest = new TestRandomizedQueue<>(queue);
+
+        Integer[] input = new Integer[]{10, 20, 30, 40,50};
+        intQueueTest.testRun("running testAddItems",
+                intQueueTest.testAddItems(input, input.length));
+
+        intQueueTest.testRun("running testDequeueItems",
+                intQueueTest.testDequeueItems(input));
+
+        Integer[] expected;
+        Integer[] actual;
+        input = new Integer[]{10, 20, 30};
+        Integer[] input2 = new Integer[]{1, 2, 3};
+        expected = new Integer[]{101, 102, 103, 201, 202, 203, 301, 302, 303};
+        actual = new Integer[expected.length];
+        intQueueTest.testRun("running testIteratorNested",
+                intQueueTest.testIteratorNested(input,input2, expected, actual));
     }
 }
