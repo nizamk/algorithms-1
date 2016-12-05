@@ -189,9 +189,7 @@ public class Deque<Item> implements Iterable<Item> {
      * @return item T
      */
     public Item removeFirst() {
-        if (isEmpty()) {
-            throw new NoSuchElementException("cannot remove from empty Deque.");
-        }
+        if (isEmpty()) throw new NoSuchElementException("cannot remove from empty Deque.");
         Node first = list.frontSentinel.next;
         removeNode(first);
         return first.item;
