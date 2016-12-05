@@ -1,6 +1,20 @@
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * Performance requirements:
+ *  Randomized queue implementation must support each randomized queue operation
+ *  (besides creating an iterator) in constant amortized time. That is, any sequence
+ *  of m randomized queue operations (starting from an empty queue) should take at
+ *  most cm steps in the worst case, for some constant c.
+ *
+ *  A randomized queue containing n items must use at most 48n + 192 bytes of memory.
+ *  Additionally, your iterator implementation must support operations next() and hasNext()
+ *  in constant worst-case time; and construction in linear time; you may (and will need to)
+ *  use a linear amount of extra memory per iterator.
+ *
+ * @param <Item>
+ */
 public class RandomizedQueue<Item> implements Iterable<Item> {
 
     private Item[] items;
@@ -16,7 +30,6 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         public Item next() {
             // TODO - RandomizedQueueIterator.next()
-
             if (!hasNext()) throw new NoSuchElementException();
             return items[0];
         }
@@ -82,11 +95,11 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     /**
      * returns an independent iterator over items in a random order
+     *
      * @return
      */
     public Iterator<Item> iterator() {
-        // TODO - iterator()
-        return null;
+        return new RandomizedQueueIterator();
     }
 
     /**
