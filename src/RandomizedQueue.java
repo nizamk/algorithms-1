@@ -79,17 +79,15 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      */
     public Item dequeue() {
         if (isEmpty()) throw new NoSuchElementException("cannot remove from empty Deque.");
-        StdOut.print("before: ");
-        printItems();
+//        printItems();
         int k = StdRandom.uniform(n);
         assert k >= 0 && k <= items.length;
         Item item = items[k];
-        StdOut.printf("Item to remove, items[%d]: %s\n", k, item);
+//        StdOut.printf("Item to remove, items[%d]: %s\n", k, item);
         items[k] = null; // avoids loitering
         n--;
         rearrangeAt(k);
-        StdOut.print("after: ");
-        printItems();
+//        printItems();
         // shrink size of array if necessary
         if (n > 0 && n == items.length / 4) resize(items.length / 2);
         return item;
