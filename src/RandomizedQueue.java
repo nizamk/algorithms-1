@@ -1,6 +1,7 @@
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -28,8 +29,8 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         private Item[] a;
 
         public RandomizedQueueIterator() {
-            a = (Item[])new Object[items.length];
-            a = java.util.Arrays.copyOf(items, n);
+            a = (Item[]) new Object[n];
+            a = Arrays.copyOf(items, n);
             m = n;
         }
 
@@ -37,17 +38,18 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             int k = StdRandom.uniform(m);
             assert k >= 0 && k <= m;
             Item item = a[k];
-            a[k] = null; // avoids loitering
-            m--;
-            rearrangeAt(k);
+            reorg(k);
             return item;
         }
 
-        private void rearrangeAt(int k) {
-            for (int i = k; i < m; i++) {
-                a[i] = a[i + 1];
-                a[i + 1] = null; // avoids loitering
+        private void reorg(int k) {
+            if (k == m - 1) {
+                a[k] = null; // avoids loitering
+            } else {
+                a[k] = a[m - 1];
+                a[m-1] = null;
             }
+            m--;
         }
 
         public boolean hasNext() { return m > 0; }
@@ -105,21 +107,22 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     public Item dequeue() {
         if (isEmpty()) throw new NoSuchElementException("cannot remove from empty Deque.");
         int k = StdRandom.uniform(n);
-        assert k >= 0 && k <= items.length;
+        assert k >= 0 && k <= n;
         Item item = items[k];
-        items[k] = null; // avoids loitering
-        n--;
-        rearrangeAt(k);
+        rearrange(k);
         // shrink size of array if necessary
         if (n > 0 && n == items.length / 4) resize(items.length / 2);
         return item;
     }
 
-    private void rearrangeAt(int k) {
-        for (int i = k; i < n; i++) {
-            items[i] = items[i + 1];
-            items[i + 1] = null; // avoids loitering
+    private void rearrange(int k) {
+        if (k == n - 1) {
+            items[k] = null; // avoids loitering
+        } else {
+            items[k] = items[n - 1];
+            items[n-1] = null;
         }
+        n--;
     }
 
     private void printItems() {
