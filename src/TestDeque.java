@@ -13,6 +13,10 @@ public class TestDeque<T> {
         StdOut.printf("* Initial Test Input: %s\n\n", Arrays.toString(inputs));
     }
 
+    public void testRun(String s, boolean b) {
+        StdOut.printf("==> %s : %s\n\n", b ? "PASSED" : "FAILED", s);
+    }
+
     // helper
     private void reset() {
         deck = new Deque<>();

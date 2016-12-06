@@ -230,43 +230,43 @@ public class Deque<Item> implements Iterable<Item> {
         Integer[] actual;
         Integer[] input;
 
-        StdOut.println("==> Running Tests for Deque<Integer>\n");
+        StdOut.println("** Running Tests for Deque<Integer>\n");
 
         input = new Integer[]{3, 5, 7};
         expected = new Integer[]{3, 5, 7};
         actual = new Integer[expected.length];
         StdOut.printf("%s : running testAddFirst()\n\n",
                 deckTestInteger.testSizeAddFirst(input) ? "SUCCESS" : "FAILED");
-        testRun("running testSizeAddFirst",
+        deckTestInteger.testRun("running testSizeAddFirst",
                 deckTestInteger.testSizeAddFirst(input));
-        testRun("running testQueueOperations",
+        deckTestInteger.testRun("running testQueueOperations",
                 deckTestInteger.testQueueOperations(input, expected, actual));
-        testRun("running testAddFirstRemoveLast",
+        deckTestInteger.testRun("running testAddFirstRemoveLast",
                 deckTestInteger.testAddFirstRemoveLast(input, expected, actual));
-        testRun("running testAddFirstRemoveLast",
+        deckTestInteger.testRun("running testAddFirstRemoveLast",
                 deckTestInteger.testRandom(input, 7, 5, 10, 10));
 
         input = new Integer[]{5, 7};
         expected = new Integer[]{7, 5};
         actual = new Integer[expected.length];
-        testRun("running testStackOperations",
+        deckTestInteger.testRun("running testStackOperations",
                 deckTestInteger.testStackOperations(input, expected, actual));
 
         input = new Integer[]{10, 20, 30, 40, 50};
         expected = new Integer[]{10,20,30,40,50};
         actual = new Integer[expected.length];
-        testRun("running testIteratorSingle",
+        deckTestInteger.testRun("running testIteratorSingle",
                 deckTestInteger.testIteratorSingle(input, expected, actual));
 
         input = new Integer[]{10, 20, 30};
         Integer[] input2 = new Integer[]{1, 2, 3};
         expected = new Integer[]{101, 102, 103, 201, 202, 203, 301, 302, 303};
         actual = new Integer[expected.length];
-        testRun("running testIteratorNested",
+        deckTestInteger.testRun("running testIteratorNested",
                 deckTestInteger.testIteratorNested(input,input2, expected, actual));
 
         // Test 2 - Deck of String
-        StdOut.println("==> Running Tests for Deque<String>\n");
+        StdOut.println("** Running Tests for Deque<String>\n");
         Deque<String> deckString = new Deque<>();
         TestDeque<String> deckTestString = new TestDeque<>(deckString, /* dummy */ new String[]{"0"});
         String[] expectedStr;
@@ -276,28 +276,24 @@ public class Deque<Item> implements Iterable<Item> {
         inputStr = new String[]{"to", "be"};
         expectedStr = new String []{"be", "to"};
         actualStr = new String[expectedStr.length];
-        testRun("running testStackOperations",
+        deckTestString.testRun("running testStackOperations",
                 deckTestString.testStackOperations(inputStr, expectedStr, actualStr));
 
         inputStr = new String[]{"to", "be", "or"};
         expectedStr = new String[]{"to", "be", "or"};
         actualStr = new String[expectedStr.length];
-        testRun("running testAddFirst",
+        deckTestString.testRun("running testAddFirst",
                 deckTestString.testSizeAddFirst(inputStr));
-        testRun("running testQueueOperations",
+        deckTestString.testRun("running testQueueOperations",
                 deckTestString.testQueueOperations(inputStr, expectedStr, actualStr));
-        testRun("running testAddFirstRemoveLast",
+        deckTestString.testRun("running testAddFirstRemoveLast",
                 deckTestString.testAddFirstRemoveLast(inputStr, expectedStr, actualStr));
 
         inputStr = new String[]{"a", "b", "c"};
         String[] inputStr2 = new String[]{"1", "2", "3"};
         expectedStr = new String[]{"a1", "a2", "a3", "b1", "b2", "b3", "c1", "c2", "c3"};
         actualStr = new String[expectedStr.length];
-        testRun("running testIteratorNested",
+        deckTestString.testRun("running testIteratorNested",
                 deckTestString.testIteratorNested(inputStr,inputStr2, expectedStr, actualStr));
-    }
-
-    private static void testRun(String s, boolean b) {
-        StdOut.printf("%s : %s\n\n", b ? "PASSED":"FAILED", s);
     }
 }
