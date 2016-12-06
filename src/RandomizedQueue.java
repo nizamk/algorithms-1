@@ -79,15 +79,12 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      */
     public Item dequeue() {
         if (isEmpty()) throw new NoSuchElementException("cannot remove from empty Deque.");
-//        printItems();
         int k = StdRandom.uniform(n);
         assert k >= 0 && k <= items.length;
         Item item = items[k];
-//        StdOut.printf("Item to remove, items[%d]: %s\n", k, item);
         items[k] = null; // avoids loitering
         n--;
         rearrangeAt(k);
-//        printItems();
         // shrink size of array if necessary
         if (n > 0 && n == items.length / 4) resize(items.length / 2);
         return item;
@@ -96,6 +93,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     private void rearrangeAt(int k) {
         for (int i = k; i < n; i++) {
             items[i] = items[i + 1];
+            items[i + 1] = null; // avoids loitering
         }
     }
 
@@ -149,6 +147,16 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         expected = new Integer[]{101, 102, 103, 201, 202, 203, 301, 302, 303};
         actual = new Integer[expected.length];
         intQueueTest.testRun("running testIteratorNested",
-                intQueueTest.testIteratorNested(input,input2, expected, actual));
+                intQueueTest.testNestedIteratorsDiffRandomizedQueues(input, input2, expected, actual));
+
+        input = new Integer[]{10, 20, 30, 40};
+        actual = new Integer[expected.length];
+        intQueueTest.testRun("running testParallelIteratorsSameRandomizedQueue",
+                intQueueTest.testParallelIteratorsSameRandomizedQueues(input));
+
+        input = new Integer[]{10, 20, 30, 40};
+        actual = new Integer[expected.length];
+        intQueueTest.testRun("running testNestedteratorsSameRandomizedQueues",
+                intQueueTest.testNestedteratorsSameRandomizedQueues(input));
     }
 }
