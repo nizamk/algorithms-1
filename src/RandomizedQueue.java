@@ -1,6 +1,7 @@
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -24,13 +25,39 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     private int n;
 
     private class RandomizedQueueIterator implements Iterator<Item> {
-        private int i = 0;
-        public boolean hasNext() { return i < n; }
+        private int m;
+        private Item[] a;
+
+        public RandomizedQueueIterator() {
+            a = (Item[]) new Object[n];
+            a = Arrays.copyOf(items, n);
+            m = n;
+        }
+
+        private Item getIt() {
+            int k = StdRandom.uniform(m);
+            assert k >= 0 && k <= m;
+            Item item = a[k];
+            reorg(k);
+            return item;
+        }
+
+        private void reorg(int k) {
+            if (k == m - 1) {
+                a[k] = null; // avoids loitering
+            } else {
+                a[k] = a[m - 1];
+                a[m-1] = null;
+            }
+            m--;
+        }
+
+        public boolean hasNext() { return m > 0; }
         public void remove() { throw new UnsupportedOperationException("remove() operation is not supported."); }
 
         public Item next() {
             if (!hasNext()) throw new NoSuchElementException();
-            return items[i++];
+            return getIt();
         }
     }
 
@@ -79,24 +106,23 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      */
     public Item dequeue() {
         if (isEmpty()) throw new NoSuchElementException("cannot remove from empty Deque.");
-//        printItems();
         int k = StdRandom.uniform(n);
-        assert k >= 0 && k <= items.length;
+        assert k >= 0 && k <= n;
         Item item = items[k];
-//        StdOut.printf("Item to remove, items[%d]: %s\n", k, item);
-        items[k] = null; // avoids loitering
-        n--;
-        rearrangeAt(k);
-//        printItems();
+        rearrange(k);
         // shrink size of array if necessary
         if (n > 0 && n == items.length / 4) resize(items.length / 2);
         return item;
     }
 
-    private void rearrangeAt(int k) {
-        for (int i = k; i < n; i++) {
-            items[i] = items[i + 1];
+    private void rearrange(int k) {
+        if (k == n - 1) {
+            items[k] = null; // avoids loitering
+        } else {
+            items[k] = items[n - 1];
+            items[n-1] = null;
         }
+        n--;
     }
 
     private void printItems() {
@@ -131,24 +157,37 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      * @param args
      */
     public static void main(String[] args) {
-        // TODO - unit testings
-        RandomizedQueue<Integer> queue = new RandomizedQueue<>();
-        TestRandomizedQueue<Integer> intQueueTest = new TestRandomizedQueue<>(queue);
-
-        Integer[] input = new Integer[]{10, 20, 30, 40,50};
-        intQueueTest.testRun("running testAddItems",
-                intQueueTest.testAddItems(input, input.length));
-
-        intQueueTest.testRun("running testDequeueItems",
-                intQueueTest.testDequeueItems(input));
-
-        Integer[] expected;
-        Integer[] actual;
-        input = new Integer[]{10, 20, 30};
-        Integer[] input2 = new Integer[]{1, 2, 3};
-        expected = new Integer[]{101, 102, 103, 201, 202, 203, 301, 302, 303};
-        actual = new Integer[expected.length];
-        intQueueTest.testRun("running testIteratorNested",
-                intQueueTest.testIteratorNested(input,input2, expected, actual));
+//        RandomizedQueue<Integer> queue = new RandomizedQueue<>();
+//        TestRandomizedQueue<Integer> intQueueTest = new TestRandomizedQueue<>(queue);
+//
+//        Integer[] input = new Integer[]{10, 20, 30, 40,50};
+//        intQueueTest.testRun("running testAddItems",
+//                intQueueTest.testAddItems(input, input.length));
+//
+//        intQueueTest.testRun("running testDequeueItems",
+//                intQueueTest.testDequeueItems(input));
+//
+//        input = new Integer[]{10, 20, 30, 40};
+//        intQueueTest.testRun("running testSingleIterator",
+//                intQueueTest.testSingleIterator(input));
+//
+//        Integer[] expected;
+//        Integer[] actual;
+//        input = new Integer[]{10, 20, 30};
+//        Integer[] input2 = new Integer[]{1, 2, 3};
+//        expected = new Integer[]{101, 102, 103, 201, 202, 203, 301, 302, 303};
+//        actual = new Integer[expected.length];
+//        intQueueTest.testRun("running testNestedIteratorsDiffRandomizedQueues",
+//                intQueueTest.testNestedIteratorsDiffRandomizedQueues(input, input2, expected, actual));
+//
+//        input = new Integer[]{10, 20, 30, 40};
+//        actual = new Integer[expected.length];
+//        intQueueTest.testRun("running testParallelIteratorsSameRandomizedQueue",
+//                intQueueTest.testParallelIteratorsSameRandomizedQueues(input));
+//
+//        input = new Integer[]{10, 20, 30, 40};
+//        actual = new Integer[expected.length];
+//        intQueueTest.testRun("running testNestedteratorsSameRandomizedQueues",
+//                intQueueTest.testNestedteratorsSameRandomizedQueues(input));
     }
 }
