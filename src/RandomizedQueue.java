@@ -33,7 +33,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             m = n;
         }
 
-        private Item dequeue() {
+        private Item getIt() {
             int k = StdRandom.uniform(m);
             assert k >= 0 && k <= m;
             Item item = a[k];
@@ -55,7 +55,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         public Item next() {
             if (!hasNext()) throw new NoSuchElementException();
-            return dequeue();
+            return getIt();
         }
     }
 
@@ -154,37 +154,37 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      * @param args
      */
     public static void main(String[] args) {
-        RandomizedQueue<Integer> queue = new RandomizedQueue<>();
-        TestRandomizedQueue<Integer> intQueueTest = new TestRandomizedQueue<>(queue);
-
-        Integer[] input = new Integer[]{10, 20, 30, 40,50};
-        intQueueTest.testRun("running testAddItems",
-                intQueueTest.testAddItems(input, input.length));
-
-        intQueueTest.testRun("running testDequeueItems",
-                intQueueTest.testDequeueItems(input));
-
-        input = new Integer[]{10, 20, 30, 40};
-        intQueueTest.testRun("running testSingleIterator",
-                intQueueTest.testSingleIterator(input));
-
-        Integer[] expected;
-        Integer[] actual;
-        input = new Integer[]{10, 20, 30};
-        Integer[] input2 = new Integer[]{1, 2, 3};
-        expected = new Integer[]{101, 102, 103, 201, 202, 203, 301, 302, 303};
-        actual = new Integer[expected.length];
-        intQueueTest.testRun("running testNestedIteratorsDiffRandomizedQueues",
-                intQueueTest.testNestedIteratorsDiffRandomizedQueues(input, input2, expected, actual));
-
-        input = new Integer[]{10, 20, 30, 40};
-        actual = new Integer[expected.length];
-        intQueueTest.testRun("running testParallelIteratorsSameRandomizedQueue",
-                intQueueTest.testParallelIteratorsSameRandomizedQueues(input));
-
-        input = new Integer[]{10, 20, 30, 40};
-        actual = new Integer[expected.length];
-        intQueueTest.testRun("running testNestedteratorsSameRandomizedQueues",
-                intQueueTest.testNestedteratorsSameRandomizedQueues(input));
+//        RandomizedQueue<Integer> queue = new RandomizedQueue<>();
+//        TestRandomizedQueue<Integer> intQueueTest = new TestRandomizedQueue<>(queue);
+//
+//        Integer[] input = new Integer[]{10, 20, 30, 40,50};
+//        intQueueTest.testRun("running testAddItems",
+//                intQueueTest.testAddItems(input, input.length));
+//
+//        intQueueTest.testRun("running testDequeueItems",
+//                intQueueTest.testDequeueItems(input));
+//
+//        input = new Integer[]{10, 20, 30, 40};
+//        intQueueTest.testRun("running testSingleIterator",
+//                intQueueTest.testSingleIterator(input));
+//
+//        Integer[] expected;
+//        Integer[] actual;
+//        input = new Integer[]{10, 20, 30};
+//        Integer[] input2 = new Integer[]{1, 2, 3};
+//        expected = new Integer[]{101, 102, 103, 201, 202, 203, 301, 302, 303};
+//        actual = new Integer[expected.length];
+//        intQueueTest.testRun("running testNestedIteratorsDiffRandomizedQueues",
+//                intQueueTest.testNestedIteratorsDiffRandomizedQueues(input, input2, expected, actual));
+//
+//        input = new Integer[]{10, 20, 30, 40};
+//        actual = new Integer[expected.length];
+//        intQueueTest.testRun("running testParallelIteratorsSameRandomizedQueue",
+//                intQueueTest.testParallelIteratorsSameRandomizedQueues(input));
+//
+//        input = new Integer[]{10, 20, 30, 40};
+//        actual = new Integer[expected.length];
+//        intQueueTest.testRun("running testNestedteratorsSameRandomizedQueues",
+//                intQueueTest.testNestedteratorsSameRandomizedQueues(input));
     }
 }
