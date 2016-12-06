@@ -13,6 +13,19 @@ public class TestRandomizedQueue<Item> {
         StdOut.printf("==> %s : %s\n\n", b ? "PASSED" : "FAILED", s);
     }
 
+    public boolean checkArrayEquality(Item[] a, Item[] b) {
+        int k = 0;
+        boolean res = true;
+        for (int i = 0; i < a.length; i++) {
+            k = 0;
+            for (; k < b.length; k++) {
+                if (a[i] == b[k]) break;
+            }
+            if (k == b.length) res = false;
+        }
+        return res;
+    }
+
     public void printItems(Item[] items) {
         StdOut.print("[");
         for (int i = 0; i < items.length; i++) {
@@ -79,28 +92,50 @@ public class TestRandomizedQueue<Item> {
 
     public boolean testParallelIteratorsSameRandomizedQueues(Item[] input) {
         StdOut.printf("Test Input: %s\n", Arrays.toString(input));
+        RandomizedQueue<Item> queue = enqueueItems(input);
+        int i=0;
+        Item[] a = (Item[])new Object[input.length];
+        for (Item s: queue) {
+            a[i++] = s;
+        }
 
+        int j = 0;
+        Item[] b = (Item[])new Object[input.length];
+        for (Item t : queue) {
+            b[j++] = t;
+        }
+        printItems(a);
+        printItems(b);
+        return checkArrayEquality(a,b);
+    }
+
+    public boolean testNestedteratorsSameRandomizedQueues(Item[] input) {
+        StdOut.printf("Test Input: %s\n", Arrays.toString(input));
         RandomizedQueue<Item> queue = enqueueItems(input);
         int i=0,j=0;
         Item[] a = (Item[])new Object[input.length];
         Item[] b = (Item[])new Object[input.length];
         for (Item s: queue) {
-//            StdOut.print("s="+ s + " ");
             a[i++] = s;
             j = 0;
             for (Item t : queue) {
-//                if (t == s) return false;
-//                StdOut.print("t="+ t + " ");
                 b[j++] = t;
             }
         }
         printItems(a);
         printItems(b);
-        StdOut.println();
-        return true;
+        return checkArrayEquality(a,b);
     }
 
-    public boolean testNestedteratorsSameRandomizedQueues(Item[] input) {
-        return false;
+    public boolean testSingleIterator(Item[] input) {
+        StdOut.printf("Test Input: %s\n", Arrays.toString(input));
+        RandomizedQueue<Item> queue = enqueueItems(input);
+        Item[] a = (Item[])new Object[input.length];
+        int i=0;
+        for (Item s: queue) {
+            a[i++] = s;
+        }
+        StdOut.printf("actual:  %s (random order)\n",Arrays.toString(a));
+        return checkArrayEquality(a, input);
     }
 }

@@ -24,13 +24,38 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     private int n;
 
     private class RandomizedQueueIterator implements Iterator<Item> {
-        private int i = 0;
-        public boolean hasNext() { return i < n; }
+        private int m;
+        private Item[] a;
+
+        public RandomizedQueueIterator() {
+            a = (Item[])new Object[items.length];
+            a = java.util.Arrays.copyOf(items, n);
+            m = n;
+        }
+
+        private Item dequeue() {
+            int k = StdRandom.uniform(m);
+            assert k >= 0 && k <= m;
+            Item item = a[k];
+            a[k] = null; // avoids loitering
+            m--;
+            rearrangeAt(k);
+            return item;
+        }
+
+        private void rearrangeAt(int k) {
+            for (int i = k; i < m; i++) {
+                a[i] = a[i + 1];
+                a[i + 1] = null; // avoids loitering
+            }
+        }
+
+        public boolean hasNext() { return m > 0; }
         public void remove() { throw new UnsupportedOperationException("remove() operation is not supported."); }
 
         public Item next() {
             if (!hasNext()) throw new NoSuchElementException();
-            return items[i++];
+            return dequeue();
         }
     }
 
@@ -129,7 +154,6 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
      * @param args
      */
     public static void main(String[] args) {
-        // TODO - unit testings
         RandomizedQueue<Integer> queue = new RandomizedQueue<>();
         TestRandomizedQueue<Integer> intQueueTest = new TestRandomizedQueue<>(queue);
 
@@ -140,13 +164,17 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         intQueueTest.testRun("running testDequeueItems",
                 intQueueTest.testDequeueItems(input));
 
+        input = new Integer[]{10, 20, 30, 40};
+        intQueueTest.testRun("running testSingleIterator",
+                intQueueTest.testSingleIterator(input));
+
         Integer[] expected;
         Integer[] actual;
         input = new Integer[]{10, 20, 30};
         Integer[] input2 = new Integer[]{1, 2, 3};
         expected = new Integer[]{101, 102, 103, 201, 202, 203, 301, 302, 303};
         actual = new Integer[expected.length];
-        intQueueTest.testRun("running testIteratorNested",
+        intQueueTest.testRun("running testNestedIteratorsDiffRandomizedQueues",
                 intQueueTest.testNestedIteratorsDiffRandomizedQueues(input, input2, expected, actual));
 
         input = new Integer[]{10, 20, 30, 40};
