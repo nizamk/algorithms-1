@@ -9,7 +9,10 @@
  ******************************************************************************/
 
 import java.util.Comparator;
+import java.util.DoubleSummaryStatistics;
+
 import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.algs4.StdOut;
 
 public class Point implements Comparable<Point> {
 
@@ -59,8 +62,13 @@ public class Point implements Comparable<Point> {
      * @return the slope between this point and the specified point
      */
     public double slopeTo(Point that) {
-        /* YOUR CODE HERE */
-        return 0.0;
+        if (null == that)
+            throw new NullPointerException();
+
+        if (y == that.y) return +0.0;
+        else if (x == that.x) return Double.POSITIVE_INFINITY;
+        else if (x == that.x && y == that.y) return Double.NEGATIVE_INFINITY;
+        return 1.0 * (that.y - y) / (that.x - x);
     }
 
     /**
@@ -76,8 +84,12 @@ public class Point implements Comparable<Point> {
      *         argument point
      */
     public int compareTo(Point that) {
-        /* YOUR CODE HERE */
-        return 0;
+        if (y < that.y) return -1;
+        else if (y == that.y) {
+            if (x < that.x) return -1;
+            else if (x == that.x) return 0;
+            else return 1;
+        } else return 1;
     }
 
     /**
@@ -87,11 +99,14 @@ public class Point implements Comparable<Point> {
      * @return the Comparator that defines this ordering on points
      */
     public Comparator<Point> slopeOrder() {
-        /* YOUR CODE HERE */
         return new Comparator<Point>() {
-            @Override
-            public int compare(Point o1, Point o2) {
-                return 0;
+            public int compare(Point v, Point w) {
+                double vSlope = slopeTo(v);
+                double pSlope = slopeTo(w);
+                // refer exercise description on this logic
+                if (vSlope < pSlope) return -1;
+                else if (vSlope > pSlope) return +1;
+                else return 0;
             }
         };
     }
@@ -113,6 +128,31 @@ public class Point implements Comparable<Point> {
      * Unit tests the Point data type.
      */
     public static void main(String[] args) {
-        /* YOUR CODE HERE */
+        Point thiz = new Point(2, 3);
+
+        Point same = new Point(2, 3);
+        Point less = new Point(4, 2);
+        Point less2 = new Point(1,3);
+        Point greater = new Point(2, 4);
+        Point greater2 = new Point(4, 3);
+
+        StdOut.printf("Point %s is %s %s\n", thiz,test(thiz, same), same );
+        StdOut.printf("Point %s is %s %s\n", thiz, test(thiz, less), less );
+        StdOut.printf("Point %s is %s %s\n", thiz, test(thiz, less2), less2 );
+        StdOut.printf("Point %s is %s %s\n", thiz, test(thiz, greater), greater );
+        StdOut.printf("Point %s is %s %s\n", thiz,test(thiz, greater2), greater2 );
+
+        // draw the points
+//        StdDraw.enableDoubleBuffering();
+//        StdDraw.setXscale(0, 32768);
+//        StdDraw.setYscale(0, 32768);
+//        thiz.drawTo(new Point(100,100));
+//        StdDraw.show();
+    }
+
+    public static String test(Point a, Point b) {
+        if (a.compareTo(b) == 0) return "same";
+        if (a.compareTo(b) < 0) return "less";
+        else return "greater";
     }
 }
