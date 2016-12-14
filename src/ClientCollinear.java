@@ -26,10 +26,10 @@ public class ClientCollinear {
 
         // print and draw the line segments
         BruteCollinearPoints collinear = new BruteCollinearPoints(points);
-//        for (LineSegment segment : collinear.segments()) {
-//            StdOut.println(segment);
-//            segment.draw();
-//        }
-//        StdDraw.show();
+        for (LineSegment segment : collinear.segments()) {
+            StdOut.println(segment);
+            segment.draw();
+        }
+        StdDraw.show();
     }
 }

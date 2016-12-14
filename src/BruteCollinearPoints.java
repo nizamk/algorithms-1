@@ -8,8 +8,7 @@ import java.util.List;
 
 public class BruteCollinearPoints {
 
-    Point[] others;
-    List<Point> lines = new ArrayList<>();
+    List<LineSegment> lines = new ArrayList<>();
     Point[] segments = new Point[4]; // contains 4 points
 
     /**
@@ -18,42 +17,36 @@ public class BruteCollinearPoints {
      * @param points
      */
     public BruteCollinearPoints(Point[] points) {
-//        others = new Point[points.length];
-
         // TODO - Find the line segments
         Point p;
         for (int i = 0; i < points.length; i++) {
             p = points[i];
-            StdOut.println("p = " + points[i]);
-            for (int s = i + 1, j = s; ((j - s) != 3) && j < points.length; j++) {
-                double m = p.slopeTo(points[j]);
-                StdOut.println("slope of p, " + p + "-> " + points[j] + "is " + Math.abs(m));
+            segments[0] = p;
+            int j = 0;
+            for (int start = i + 1, end = start + 1; ((end - start) != 4) && end < points.length; end++) {
+                double m1 = p.slopeTo(points[end-1]);
+                double m2 = p.slopeTo(points[end]);
+                StdOut.println("slope of p, " + p + "-> " + points[end-1] + "is " + Math.abs(m1));
+                boolean equalSlope = (m1 == m2);
+                if (equalSlope) {
+                    j = end - start;
+                    segments[j] = points[end - 1];
+                    j = end - start + 1;
+                    segments[j] = points[end];
+                }
             }
+            StdOut.println("j=> " + j);
+            if (j == 3) {
+                Arrays.sort(segments);
+                StdOut.println("Segments:");
+                for (int k = 0; k < 4; k++) {
+                    StdOut.println(segments[k]);
+                }
+                lines.add(new LineSegment(segments[0], segments[3]));
+            }
+            StdOut.println("******");
         }
-//        for (int i = 0; i < points.length; i++) {
-//            p = points[i];
-//            int start= i;
-//            int end = 2;
-//            int count = 0;
-//            int j = 0;
-//            segments[j] = p;
-//            while (end < points.length) {
-//                double m1 = p.slopeTo(points[start + end]);
-//                double m2 = p.slopeTo(points[start + end - 1]);
-//                boolean equalSlope = (m1 == m2);
-//                if (equalSlope) {
-//                    end++;
-//                    segments[++j] = points[start + end - 1];
-//                    if (end == 3) {
-//                    }
-//                }
-//
-//                if (end == points.length) {
-//
-//                }
-//            }
-//        }
-        }
+    }
 
     /**
      * The number of line segments
