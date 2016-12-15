@@ -8,8 +8,8 @@ import java.util.List;
 
 public class BruteCollinearPoints {
 
-    List<LineSegment> lines = new ArrayList<>();
-    Point[] segments = new Point[4]; // contains 4 points
+    private List<LineSegment> lines = new ArrayList<>();
+    private Point[] segments = new Point[4]; // contains 4 points
 
     /**
      * finds all line segments containing 4 points or more points
@@ -26,7 +26,7 @@ public class BruteCollinearPoints {
             for (int start = i + 1, end = start + 1; ((end - start) != 4) && end < points.length; end++) {
                 double m1 = p.slopeTo(points[end-1]);
                 double m2 = p.slopeTo(points[end]);
-                StdOut.println("slope of p, " + p + "-> " + points[end-1] + "is " + Math.abs(m1));
+//                StdOut.println("slope of p, " + p + "-> " + points[end-1] + "is " + Math.abs(m1));
                 boolean equalSlope = (m1 == m2);
                 if (equalSlope) {
                     j = end - start;
@@ -35,16 +35,11 @@ public class BruteCollinearPoints {
                     segments[j] = points[end];
                 }
             }
-            StdOut.println("j=> " + j);
+//            StdOut.println("j=> " + j);
             if (j == 3) {
                 Arrays.sort(segments);
-                StdOut.println("Segments:");
-                for (int k = 0; k < 4; k++) {
-                    StdOut.println(segments[k]);
-                }
-                lines.add(new LineSegment(segments[0], segments[3]));
+                lines.add(new LineSegment(segments[0], segments[segments.length-1]));
             }
-            StdOut.println("******");
         }
     }
 
