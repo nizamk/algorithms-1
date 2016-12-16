@@ -9,7 +9,11 @@ import java.util.List;
 public class BruteCollinearPoints {
 
     private List<LineSegment> lines = new ArrayList<>();
-    private Point[] segments = new Point[4]; // contains 4 points
+
+    private boolean collinear(Point p, Point q, Point r, Point s) {
+        return p.slopeTo(q) == q.slopeTo(r) &&
+               q.slopeTo(r) == r.slopeTo(s);
+    }
 
     /**
      * finds all line segments containing 4 points or more points
@@ -17,28 +21,28 @@ public class BruteCollinearPoints {
      * @param points
      */
     public BruteCollinearPoints(Point[] points) {
-        // TODO - Find the line segments
-        Point p;
+        // Performance is O(N^4) :(
+        checkDuplicates(points);
+        Arrays.sort(points);
         for (int i = 0; i < points.length; i++) {
-            p = points[i];
-            segments[0] = p;
-            int j = 0;
-            for (int start = i + 1, end = start + 1; ((end - start) != 4) && end < points.length; end++) {
-                double m1 = p.slopeTo(points[end-1]);
-                double m2 = p.slopeTo(points[end]);
-//                StdOut.println("slope of p, " + p + "-> " + points[end-1] + "is " + Math.abs(m1));
-                boolean equalSlope = (m1 == m2);
-                if (equalSlope) {
-                    j = end - start;
-                    segments[j] = points[end - 1];
-                    j = end - start + 1;
-                    segments[j] = points[end];
+            for (int j = i + 1; j < points.length; j++) {
+                for (int k = j + 1; k < points.length; k++) {
+                    for (int l = k + 1; l < points.length; l++) {
+                        if (collinear(points[i], points[j], points[k], points[l])) {
+                            lines.add(new LineSegment(points[i], points[l]));
+                        }
+                    }
                 }
             }
-//            StdOut.println("j=> " + j);
-            if (j == 3) {
-                Arrays.sort(segments);
-                lines.add(new LineSegment(segments[0], segments[segments.length-1]));
+        }
+    }
+
+    private void checkDuplicates(Point[] points) {
+        for (int i = 0; i < points.length; i++) {
+            for (int j = i + 1; j < points.length; j++) {
+                if (points[i].compareTo(points[j]) == 0) {
+                    throw new IllegalArgumentException("Duplicate points.");
+                }
             }
         }
     }

@@ -19,6 +19,7 @@ public class ClientCollinear {
         StdDraw.enableDoubleBuffering();
         StdDraw.setXscale(0, 32768);
         StdDraw.setYscale(0, 32768);
+        StdDraw.setPenRadius(0.005);
         for (Point p : points) {
             p.draw();
         }
@@ -26,6 +27,8 @@ public class ClientCollinear {
 
         // print and draw the line segments
         BruteCollinearPoints collinear = new BruteCollinearPoints(points);
+        StdOut.println("\nLine Segments to Draw:");
+        StdOut.println("======================");
         for (LineSegment segment : collinear.segments()) {
             StdOut.println(segment);
             segment.draw();
