@@ -18,12 +18,17 @@ public class BruteCollinearPoints {
     /**
      * finds all line segments containing 4 points or more points
      *
-     * @param points
+     * @param original
      */
-    public BruteCollinearPoints(Point[] points) {
-        // Performance is O(N^4) :(
+    public BruteCollinearPoints(Point[] original) {
+
+        // Do not mutate constructor argument
+        Point[] points= Arrays.copyOf(original, original.length);
+
         checkDuplicates(points);
         Arrays.sort(points);
+
+        // Performance is O(N^4) :(
         for (int i = 0; i < points.length; i++) {
             for (int j = i + 1; j < points.length; j++) {
                 for (int k = j + 1; k < points.length; k++) {

@@ -107,14 +107,20 @@ public class Point implements Comparable<Point> {
      * @return the Comparator that defines this ordering on points
      */
     public Comparator<Point> slopeOrder() {
+
         return new Comparator<Point>() {
-            public int compare(Point v, Point w) {
-                double vSlope = slopeTo(v);
-                double pSlope = slopeTo(w);
-                // refer exercise description on this logic
-                if (vSlope < pSlope) return -1;
-                else if (vSlope > pSlope) return +1;
-                else return 0;
+            @Override
+            public int compare(Point q, Point r) {
+                double pq = slopeTo(q);
+                double pr = slopeTo(r);
+                double diff = pq - pr;
+//                StdOut.println("p: " + Point.this + " slope to => q: " + q + "," + pq + " r: " + r + "," + pr);
+                if (diff > 0)
+                    return 1;
+                else if (diff < 0)
+                    return -1;
+                else
+                    return 0;
             }
         };
     }

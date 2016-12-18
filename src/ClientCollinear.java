@@ -26,7 +26,7 @@ public class ClientCollinear {
         StdDraw.show();
 
         // print and draw the line segments
-        BruteCollinearPoints collinear = new BruteCollinearPoints(points);
+        FastCollinearPoints collinear = new FastCollinearPoints(points);
         StdOut.println("\nLine Segments to Draw:");
         StdOut.println("======================");
         for (LineSegment segment : collinear.segments()) {
