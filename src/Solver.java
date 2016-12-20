@@ -4,6 +4,20 @@ import edu.princeton.cs.algs4.StdOut;
 import java.util.Iterator;
 
 public class Solver {
+
+    class SearchNode {
+        Board board;
+        int moves;
+        SearchNode prevNode;
+
+        public SearchNode(Board board, int moves, SearchNode prevNode) {
+            this.board = board;
+            this.moves = moves;
+            this.prevNode = prevNode;
+        }
+
+    }
+
     /**
      * find a solution to the initial board (using the A* algorithm)
      *
@@ -19,6 +33,7 @@ public class Solver {
      * @return
      */
     public boolean isSolvable() {
+        // todo - isSolvable
         return false;
     }
 
@@ -28,6 +43,7 @@ public class Solver {
      * @return
      */
     public int moves() {
+        // todo - moves()
         return 0;
     }
 
@@ -37,6 +53,7 @@ public class Solver {
      * @return
      */
     public Iterable<Board> solution() {
+        // todo - solution()
         return new Iterable<Board>() {
             @Override
             public Iterator<Board> iterator() {
