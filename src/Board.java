@@ -12,11 +12,11 @@ public class Board {
     }
 
     /**
-     * board size N
+     * board dimension n
      *
      * @return
      */
-    public int size() {
+    public int dimension() {
         return 0;
     }
 
@@ -48,12 +48,12 @@ public class Board {
     }
 
     /**
-     * is the board solvable?
+     * a board that is obtained by exchanging any pair of blocks
      *
      * @return
      */
-    public boolean isSolvable() {
-        return false;
+    public Board twin() {
+        return new Board(new int[1][1]);
     }
 
     /**
