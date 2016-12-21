@@ -1,19 +1,26 @@
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.util.Iterator;
 
 public class Solver {
 
+    MinPQ<SearchNode> minPQ = new MinPQ<>();
+
     class SearchNode {
         Board board;
-        int moves;
+        int n;  // total moves so far
         SearchNode prevNode;
 
-        public SearchNode(Board board, int moves, SearchNode prevNode) {
+        public SearchNode(Board board, int n, SearchNode prevNode) {
             this.board = board;
-            this.moves = moves;
+            this.n = n;
             this.prevNode = prevNode;
+        }
+
+        public int priority() {
+            return n + board.manhattan();
         }
 
     }
@@ -24,6 +31,7 @@ public class Solver {
      * @param initial
      */
     public Solver(Board initial) {
+        SearchNode start = new SearchNode(initial, 0, null);
 
     }
 
