@@ -122,39 +122,36 @@ public class SolverVisualizer {
 
             long start = System.currentTimeMillis();
 
-            /*
-            Need to fix to make it work
-             */
-//            if (!initial.isSolvable()) {
-//                long now = System.currentTimeMillis();
-//                title += " (no solution possible)";
-//                movingTile = 0;
-//                currentMoves = 0;
-//                animateMove(); // display start position only
-//            }
-//            else {
-//                Solver solver = new Solver(initial);
-//                totalMoves = solver.moves();
-//                currentMoves = 0;
-//
-//                for (Board board : solver.solution()) {
-//                    manhattan = board.manhattan();
-//                    for (int row = 0; row < N; row++) {
-//                        for (int col = 0; col < N; col++) {
-//                            int tile = board.tileAt(row, col);
-//                            // if this position was previously empty
-//                            if (tileAt[row][col] == 0)
-//                                movingTile = tile; // animate the tile into it
-//                            tileAt[row][col] = tile;
-//                        }
-//                    }
-//                    animateMove(); // show move (or static initial state 1st time)
-//                    currentMoves++;
-//                }
-//                // show final position for one extra 'move time' before (possibly)
-//                // moving on to display next puzzle solution.
-//                StdDraw.show(ANIMATE_TIME + PAUSE_TIME);
-//            }
+            Solver solver = new Solver(initial);
+            if (!solver.isSolvable()) {
+                long now = System.currentTimeMillis();
+                title += " (no solution possible)";
+                movingTile = 0;
+                currentMoves = 0;
+                animateMove(); // display start position only
+            }
+            else {
+                totalMoves = solver.moves();
+                currentMoves = 0;
+                for (Board board : solver.solution()) {
+                    manhattan = board.manhattan();
+                    for (int row = 0; row < N; row++) {
+                        for (int col = 0; col < N; col++) {
+                            int tile = board.tileAt(row, col);
+                            // if this position was previously empty
+                            if (tileAt[row][col] == 0)
+                                movingTile = tile; // animate the tile into it
+                            tileAt[row][col] = tile;
+                        }
+                    }
+                    animateMove(); // show move (or static initial state 1st time)
+                    currentMoves++;
+                }
+                // show final position for one extra 'move time' before (possibly)
+                // moving on to display next puzzle solution.
+                StdDraw.show(ANIMATE_TIME + PAUSE_TIME);
+                StdDraw.show(ANIMATE_TIME + PAUSE_TIME);
+            }
             StdOut.println(title);
         }
     }

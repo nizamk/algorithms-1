@@ -8,6 +8,7 @@ import java.util.Iterator;
 
 public class Solver {
 
+    private boolean solvable;
     private SearchNode goalNode;
 
     private MinPQ<SearchNode> minPQ = new MinPQ<>(100, new Comparator<SearchNode>() {
@@ -42,13 +43,25 @@ public class Solver {
      * @param initial
      */
     public Solver(Board initial) {
+
+        solvable = runAStarAlgorithm(initial);
+        if (solvable) {
+            StdOut.println(initial);
+            StdOut.println("This board is solvable.");
+        }
+//        solvable = runAStarAlgorithm(initial.twin());
+    }
+
+    private boolean runAStarAlgorithm(Board initial) {
         minPQ.insert(new SearchNode(initial, 0, null));
         while (!minPQ.isEmpty()) {
+            // retrieve node with least/minimum priority
             SearchNode parent = minPQ.delMin();
+
+            // goal board found
             if (parent.board().isGoal()) {
-                StdOut.println("Found solution");
                 goalNode = parent;
-                break;
+                return true;
             }
 
             // insert neighbour nodes to priority queue
@@ -58,13 +71,12 @@ public class Solver {
                 if (grandParent == null)
                     minPQ.insert(node);
                 else {
-//                    Board a = node.board();
-//                    Board b = grandParent.board();
                     if (!node.board().equals(grandParent.board()))
                         minPQ.insert(node);
                 }
             }
         }
+        return false;
     }
 
     /**
@@ -73,8 +85,7 @@ public class Solver {
      * @return
      */
     public boolean isSolvable() {
-        // todo - isSolvable()
-        return true;
+        return solvable;
     }
 
     /**
@@ -82,9 +93,7 @@ public class Solver {
      *
      * @return
      */
-    public int moves() {
-        return goalNode.moves();
-    }
+    public int moves() { return goalNode.moves(); }
 
     /**
      * sequence of boards in a shortest solution
