@@ -1,29 +1,40 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.MinPQ;
+import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdOut;
 
+import java.util.Comparator;
 import java.util.Iterator;
 
 public class Solver {
 
-    MinPQ<SearchNode> minPQ = new MinPQ<>();
+    private SearchNode goalNode;
+
+    private MinPQ<SearchNode> minPQ = new MinPQ<>(100, new Comparator<SearchNode>() {
+        @Override
+        public int compare(SearchNode a, SearchNode b) {
+            return a.priorityManhattan() - b.priorityManhattan() ;
+        }
+    });
 
     class SearchNode {
         Board board;
-        int n;  // total moves so far
+        int moves;  // total moves so far
         SearchNode prevNode;
+        int priority;
 
-        public SearchNode(Board board, int n, SearchNode prevNode) {
-            this.board = board;
-            this.n = n;
-            this.prevNode = prevNode;
+        SearchNode(Board b, int n, SearchNode previous) {
+            board = b;
+            moves = n;
+            prevNode = previous;
+            priority = moves + b.manhattan();
         }
 
-        public int priority() {
-            return n + board.manhattan();
-        }
-
-    }
+        SearchNode getPrevNode() { return prevNode; }
+        int moves() { return moves; }
+        int priorityManhattan() { return priority; }
+        public Board board() { return board; }
+    };
 
     /**
      * find a solution to the initial board (using the A* algorithm)
@@ -31,8 +42,29 @@ public class Solver {
      * @param initial
      */
     public Solver(Board initial) {
-        SearchNode start = new SearchNode(initial, 0, null);
+        minPQ.insert(new SearchNode(initial, 0, null));
+        while (!minPQ.isEmpty()) {
+            SearchNode parent = minPQ.delMin();
+            if (parent.board().isGoal()) {
+                StdOut.println("Found solution");
+                goalNode = parent;
+                break;
+            }
 
+            // insert neighbour nodes to priority queue
+            for (Board child : parent.board().neighbors()) {
+                SearchNode node = new SearchNode(child, parent.moves() + 1, parent);
+                SearchNode grandParent = parent.getPrevNode();
+                if (grandParent == null)
+                    minPQ.insert(node);
+                else {
+//                    Board a = node.board();
+//                    Board b = grandParent.board();
+                    if (!node.board().equals(grandParent.board()))
+                        minPQ.insert(node);
+                }
+            }
+        }
     }
 
     /**
@@ -41,8 +73,8 @@ public class Solver {
      * @return
      */
     public boolean isSolvable() {
-        // todo - isSolvable
-        return false;
+        // todo - isSolvable()
+        return true;
     }
 
     /**
@@ -51,8 +83,7 @@ public class Solver {
      * @return
      */
     public int moves() {
-        // todo - moves()
-        return 0;
+        return goalNode.moves();
     }
 
     /**
@@ -61,13 +92,10 @@ public class Solver {
      * @return
      */
     public Iterable<Board> solution() {
-        // todo - solution()
-        return new Iterable<Board>() {
-            @Override
-            public Iterator<Board> iterator() {
-                return null;
-            }
-        };
+        Stack<Board> stack = new Stack<>();
+        for (SearchNode node = goalNode; node != null; node = node.getPrevNode())
+            stack.push(node.board());
+        return stack;
     }
 
     // solve a slider puzzle (code given below)
@@ -79,9 +107,9 @@ public class Solver {
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++)
                 blocks[i][j] = in.readInt();
-        Board initial = new Board(blocks);
 
         // solve the puzzle
+        Board initial = new Board(blocks);
         Solver solver = new Solver(initial);
 
         // print solution to standard output
@@ -94,3 +122,4 @@ public class Solver {
         }
     }
 }
+

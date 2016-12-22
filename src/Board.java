@@ -8,12 +8,13 @@ import java.util.Map;
 
 public class Board {
 
-    private int[] goalBoard;
-
+    private int[] goalTiles;
     private int[] tiles;
     private Queue<Board> boardsNeighbor = new Queue<>();
-    private int n; // one-side dimension
+    private int n;                  // one-side dimension
     private int blankTileIndex;
+    private int manhattan;
+    private int hamming;
 
     /**
      * construct a board from an N-by-N array of blocks
@@ -22,35 +23,33 @@ public class Board {
      * @param blocks
      */
     public Board(int[][] blocks) {
-
-        if (blocks.length != blocks[0].length) {
-            throw new IllegalArgumentException("row and column must be same.");
-        }
+        if (blocks.length != blocks[0].length)
+            throw new IllegalArgumentException("Row and column must be same.");
 
         n = blocks.length;
         int nBlankSquare = 0;
-        tiles = new int[n*n];
+        tiles = new int[n * n];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if (blocks[i][j] > (n*n - 1)) {
-                    String s = String.format("Board should contain integers between 0 and %d", n*n-1);
+                if (blocks[i][j] > (n * n - 1)) {
+                    String s = String.format("Board should contain integers between 0 and %d", n * n - 1);
                     throw new IllegalArgumentException(s);
                 }
-                if (blocks[i][j] == 0) {
-                    nBlankSquare++;
-                }
+                if (blocks[i][j] == 0) nBlankSquare++;
                 tiles[xyTo1D(i, j)] = blocks[i][j];
             }
         }
-        goalBoard = generateGoalBoard();
+        goalTiles = generateGoalTiles();
         blankTileIndex = indexOf(0);
 
-        if (nBlankSquare == 0) {
+        // todo - to remove - for debugging only
+//        manhattan = manhattan();
+//        hamming = hamming();
+
+        if (nBlankSquare == 0)
             throw new IllegalArgumentException("One block should be designated as blank square with value of 0.");
-        }
-        if (nBlankSquare > 1) {
-            throw new IllegalArgumentException("Multiple blank squares are detected.");
-        }
+        if (nBlankSquare > 1)
+            throw new IllegalArgumentException("Multiple blank squares are disallowed.");
     }
 
     /**
@@ -59,9 +58,7 @@ public class Board {
      * Performance: O(1)
      * @return
      */
-    public int dimension() {
-        return n*n;
-    }
+    public int dimension() { return n * n; }
 
     /**
      * Number of blocks in wrong position
@@ -110,7 +107,7 @@ public class Board {
      *
      * @return
      */
-    public boolean isGoal() { return Arrays.equals(tiles, goalBoard); }
+    public boolean isGoal() { return Arrays.equals(tiles, goalTiles); }
 
     /**
      * a board that is obtained by exchanging any pair of blocks
@@ -146,14 +143,23 @@ public class Board {
      * @return
      */
     public Iterable<Board> neighbors() {
-        Board slideSouth = generateNeighborBoard(blankTileIndex, blankTileIndex > 2 ? blankTileIndex - 3 : -1);
-        Board slideNorth = generateNeighborBoard(blankTileIndex, blankTileIndex < 6 ? blankTileIndex + 3 : -1);
-        Board slideEast = generateNeighborBoard(blankTileIndex, blankTileIndex % 3 > 0 ? blankTileIndex - 1  : -1);
-        Board slideWest = generateNeighborBoard(blankTileIndex, blankTileIndex % 3 < 2 ? blankTileIndex + 1  : -1);
-        boardsNeighbor.enqueue(slideSouth);
-        boardsNeighbor.enqueue(slideNorth);
-        boardsNeighbor.enqueue(slideEast);
-        boardsNeighbor.enqueue(slideWest);
+
+        // Generate adjacent boards: no of boards can be from 2 to 4
+        // if blanktile at corner - 2 adjacent boards
+        // if blanktile at one-sided boundary - 3 adjacent boards
+        // otherwise 4 adjancent boards
+        Board slideBelow = generateNeighborBoard(blankTileIndex, blankTileIndex > 2 ? blankTileIndex - 3 : -1);
+        Board slideAbove = generateNeighborBoard(blankTileIndex, blankTileIndex < 6 ? blankTileIndex + 3 : -1);
+        Board slideRight = generateNeighborBoard(blankTileIndex, blankTileIndex % 3 > 0 ? blankTileIndex - 1  : -1);
+        Board slideLeft = generateNeighborBoard(blankTileIndex, blankTileIndex % 3 < 2 ? blankTileIndex + 1  : -1);
+        if (slideBelow != null)
+            boardsNeighbor.enqueue(slideBelow);
+        if (slideAbove != null)
+            boardsNeighbor.enqueue(slideAbove);
+        if (slideRight != null)
+            boardsNeighbor.enqueue(slideRight);
+        if (slideLeft != null)
+            boardsNeighbor.enqueue(slideLeft);
         return boardsNeighbor;
     }
 
@@ -180,8 +186,8 @@ public class Board {
 
     // NOTE:
     // map 1D i to 2D (x,y):
-    // x = i / n  where n is one-side size
-    // y = i % n
+    // row = i / n  where n is one-side size
+    // col = i % n
     private int manhattanDistance(int a, int b) {
         return Math.abs(a / n - b / n) + Math.abs(a % n - b % n);
     }
@@ -194,11 +200,11 @@ public class Board {
     }
 
     // Helper
-    private int[] generateGoalBoard() {
-        goalBoard = new int[n * n];
+    private int[] generateGoalTiles() {
+        goalTiles = new int[n * n];
         for (int i = 0; i < n * n - 1; i++)
-            goalBoard[i] = i+1;
-        return goalBoard;
+            goalTiles[i] = i+1;
+        return goalTiles;
     }
 
     // Helper
@@ -216,11 +222,8 @@ public class Board {
     // Helper
     private int[][] mapTo2DTiles(int[] newTiles) {
         int[][] thisTiles = new int[n][n];
-        for (int i = 0; i < n * n; i++) {
-            int row = i / n;
-            int col = i % n;
-            thisTiles[row][col] = newTiles[i];
-        }
+        for (int i = 0; i < n * n; i++)
+            thisTiles[i / n][i % n] = newTiles[i];
         return thisTiles;
     }
 
@@ -258,6 +261,7 @@ public class Board {
 //        StdOut.println("ab board: \n" + ab);
 //        StdOut.println("manhanttan ab: " + ab.manhattan());
 
+
         int[][] initial = new int[][] {
                 { 8, 1, 3},
                 { 4, 0, 2},
@@ -267,8 +271,20 @@ public class Board {
         StdOut.printf("initial manhattan %d, hamming %d \n", board.manhattan(), board.hamming());
         StdOut.println("initial board: \n" + board);
         StdOut.println("neighbors:");
-        for (Board b : board.neighbors()) {
-            StdOut.println(b );
-        }
+        for (Board b : board.neighbors())
+            StdOut.println(b);
+
+//        int[][] initial = new int[][] {
+//                { 0, 1, 3},
+//                { 4, 2, 5},
+//                { 7, 8, 6},
+//        };
+//        Board board = new Board(initial);
+//        StdOut.printf("initial manhattan %d, hamming %d \n", board.manhattan(), board.hamming());
+//        StdOut.println("initial board: \n" + board);
+//        StdOut.println("neighbors:");
+//        for (Board b : board.neighbors())
+//            StdOut.println(b );
+
     }
 }
