@@ -5,7 +5,6 @@ import java.util.Arrays;
 
 public class Board {
 
-    private int[] goalTiles;
     private int[] tiles;
     private int n;  // one-side dimension
     private int blankTileIndex;
@@ -30,7 +29,6 @@ public class Board {
         dimension = n*n;
 
         tiles = new int[dimension];
-        goalTiles = new int[dimension];
         int k;
         int nBlankSquare = 0;
         for (int i = 0; i < n; i++) {
@@ -45,9 +43,6 @@ public class Board {
                 k = xyTo1D(i, j);
                 // set initial tiles
                 tiles[k] = blocks[i][j];
-                // set goal tiles
-                if (k < (dimension - 1))    // leave out blank tile, the last tile
-                    goalTiles[k] = k + 1;
             }
         }
         blankTileIndex = indexOf(0);
@@ -67,7 +62,7 @@ public class Board {
      * Performance: O(1)
      * @return
      */
-    public int dimension() { return dimension; }
+    public int dimension() { return n; }
 
     /**
      * Number of blocks in wrong position
@@ -95,7 +90,13 @@ public class Board {
      *
      * @return
      */
-    public boolean isGoal() { return Arrays.equals(tiles, goalTiles); }
+    public boolean isGoal() {
+        int[] goalTiles = new int[dimension];
+        for (int i = 0; i < (dimension - 1); i++) {
+            goalTiles[i] = i + 1;
+        }
+        return Arrays.equals(tiles, goalTiles);
+    }
 
     /**
      * a board that is obtained by exchanging any pair of blocks
@@ -226,19 +227,6 @@ public class Board {
         return thisTiles;
     }
 
-    // @deprecate
-//    private int manhattanDistance() {
-//        int count = 0;
-//        int expect = 0;
-//        for (int i = 0; i < dimension; i++) {
-//            expect++;
-//            if (tiles[i] != 0 && tiles[i] != expect) {
-//                count += manhattanDistance(i, tiles[i] - 1);
-//            }
-//        }
-//        return count;
-//    }
-
     private void calculateHammingAndManhattanPriorityDistance() {
         int expect = 0;
         for (int i = 0; i < dimension; i++) {
@@ -250,47 +238,10 @@ public class Board {
         }
     }
 
-    // @deprecate
-//    private int hammingDistance() {
-//        int count = 0;
-//        int expect = 0;
-//        for (int i = 0; i < dimension; i++) {
-//            expect++;
-//            if (tiles[i] != 0 && tiles[i] != expect)
-//                count++;
-//        }
-//        return count;
-//    }
-
-    private Queue<Board> generateNeighbors() {
-        // Generate adjacent boards: no of boards can be from 2 to 4
-        // if blanktile at corner - 2 adjacent boards
-        // if blanktile at one-sided boundary - 3 adjacent boards
-        // otherwise 4 adjancent boards
-        Board slideBelow = generateNeighborBoard(blankTileIndex, blankTileIndex > n - 1 ? blankTileIndex - n : -1);
-        Board slideAbove = generateNeighborBoard(blankTileIndex, blankTileIndex < n * 2 ? blankTileIndex + n : -1);
-        Board slideRight = generateNeighborBoard(blankTileIndex, blankTileIndex % n > 0 ? blankTileIndex - 1  : -1);
-        Board slideLeft = generateNeighborBoard(blankTileIndex, blankTileIndex % n < n - 1 ? blankTileIndex + 1  : -1);
-
-//        Board slideBelow = generateNeighborBoard(blankTileIndex, blankTileIndex > 2 ? blankTileIndex - 3 : -1);
-//        Board slideAbove = generateNeighborBoard(blankTileIndex, blankTileIndex < 6 ? blankTileIndex + 3 : -1);
-//        Board slideRight = generateNeighborBoard(blankTileIndex, blankTileIndex % 3 > 0 ? blankTileIndex - 1  : -1);
-//        Board slideLeft = generateNeighborBoard(blankTileIndex, blankTileIndex % 3 < 2 ? blankTileIndex + 1  : -1);
-        if (slideBelow != null)
-            boardsNeighbor.enqueue(slideBelow);
-        if (slideAbove != null)
-            boardsNeighbor.enqueue(slideAbove);
-        if (slideRight != null)
-            boardsNeighbor.enqueue(slideRight);
-        if (slideLeft != null)
-            boardsNeighbor.enqueue(slideLeft);
-        return boardsNeighbor;
-    }
-
     // tileAt(row,col) todo -  to remove before submission - this method only for visualizer
-//    public int tileAt(int row, int col) {
-//        return tiles[xyTo1D(row, col)];
-//    }
+    public int tileAt(int row, int col) {
+        return tiles[xyTo1D(row, col)];
+    }
 
 
     /**

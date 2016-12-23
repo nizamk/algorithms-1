@@ -11,7 +11,7 @@ public class Solver {
     private boolean solvable;
     private SearchNode goalNode;
 
-    Comparator<SearchNode> comparator = new Comparator<SearchNode>() {
+    private Comparator<SearchNode> comparator = new Comparator<SearchNode>() {
         @Override
         public int compare(SearchNode a, SearchNode b) {
             // break ties
@@ -25,7 +25,7 @@ public class Solver {
     private MinPQ<SearchNode> minPQ = new MinPQ<>(100, comparator);
     private MinPQ<SearchNode> minTwinPQ = new MinPQ<>(100, comparator);
 
-    class SearchNode {
+    private class SearchNode {
         Board board;
         int moves;  // total moves so far
         SearchNode prevNode;
@@ -73,9 +73,11 @@ public class Solver {
             // Goal board found. It's is solved.
             if (parent.board().isGoal()) {
                 goalNode = parent;
+                StdOut.println("goal found");
                 return true;
             } else if (parentTwin.board().isGoal()) {
                 goalNode = parentTwin;
+                StdOut.println("twin goal found");
                 return true;
             }
             // Select the next move by selecting a tile from neighboring blank tile.
@@ -95,6 +97,7 @@ public class Solver {
                     minTwinPQ.insert(node);
             }
         }
+        StdOut.println("Goal not found");
         return false;
     }
 
