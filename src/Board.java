@@ -51,6 +51,8 @@ public class Board {
             throw new IllegalArgumentException("One block should be designated as blank square with value of 0.");
         if (nBlankSquare > 1)
             throw new IllegalArgumentException("Multiple blank squares are disallowed.");
+
+        StdOut.println("***Created Tile.");
     }
 
     /**
@@ -59,7 +61,7 @@ public class Board {
      * Performance: O(1)
      * @return
      */
-    public int dimension() { return n * n; }
+    public int dimension() { return dimension; }
 
     /**
      * Number of blocks in wrong position
@@ -68,9 +70,7 @@ public class Board {
      *
      * @return
      */
-    public int hamming() {
-        return hamming;
-    }
+    public int hamming() { return hamming; }
 
     /**
      * sum of Manhattan distances between blocks and goal
@@ -79,10 +79,7 @@ public class Board {
      *
      * @return
      */
-    public int manhattan() {
-        return manhattan;
-    }
-
+    public int manhattan() { return manhattan; }
 
 
     /**
@@ -128,14 +125,15 @@ public class Board {
      * @return
      */
     public Iterable<Board> neighbors() {
+        StdOut.println("generate neighbors.");
         // Generate adjacent boards: no of boards can be from 2 to 4
         // if blanktile at corner - 2 adjacent boards
         // if blanktile at one-sided boundary - 3 adjacent boards
         // otherwise 4 adjancent boards
-        Board slideBelow = generateNeighborBoard(blankTileIndex, blankTileIndex > 2 ? blankTileIndex - 3 : -1);
-        Board slideAbove = generateNeighborBoard(blankTileIndex, blankTileIndex < 6 ? blankTileIndex + 3 : -1);
-        Board slideRight = generateNeighborBoard(blankTileIndex, blankTileIndex % 3 > 0 ? blankTileIndex - 1  : -1);
-        Board slideLeft = generateNeighborBoard(blankTileIndex, blankTileIndex % 3 < 2 ? blankTileIndex + 1  : -1);
+        Board slideBelow = generateNeighborBoard(blankTileIndex, blankTileIndex > n - 1 ? blankTileIndex - n : -1);
+        Board slideAbove = generateNeighborBoard(blankTileIndex, blankTileIndex < n * (n - 1) ? blankTileIndex + n : -1);
+        Board slideRight = generateNeighborBoard(blankTileIndex, blankTileIndex % n > 0 ? blankTileIndex - 1 : -1);
+        Board slideLeft = generateNeighborBoard(blankTileIndex, blankTileIndex % n < n - 1 ? blankTileIndex + 1 : -1);
         if (slideBelow != null)
             boardsNeighbor.enqueue(slideBelow);
         if (slideAbove != null)
@@ -144,6 +142,9 @@ public class Board {
             boardsNeighbor.enqueue(slideRight);
         if (slideLeft != null)
             boardsNeighbor.enqueue(slideLeft);
+
+        StdOut.println("Completed generate neighbors.");
+
         return boardsNeighbor;
     }
 
@@ -155,9 +156,10 @@ public class Board {
      * @return
      */
     public String toString() {
+        // todo - toString() generalized version
         StringBuilder s = new StringBuilder();
         s.append(n + "\n");
-        for (int i = 0; i < n*n; i += 3) {
+        for (int i = 0; i < dimension; i += n) {
             s.append(String.format("%2d%2d%2d", tiles[i], tiles[i+1], tiles[i+2]));
             s.append("\n");
         }
@@ -186,8 +188,8 @@ public class Board {
 
     // Helper
     private int[] generateGoalTiles() {
-        goalTiles = new int[n * n];
-        for (int i = 0; i < n * n - 1; i++)
+        goalTiles = new int[dimension];
+        for (int i = 0; i < dimension - 1; i++)
             goalTiles[i] = i+1;
         return goalTiles;
     }
@@ -239,10 +241,15 @@ public class Board {
         // if blanktile at corner - 2 adjacent boards
         // if blanktile at one-sided boundary - 3 adjacent boards
         // otherwise 4 adjancent boards
-        Board slideBelow = generateNeighborBoard(blankTileIndex, blankTileIndex > 2 ? blankTileIndex - 3 : -1);
-        Board slideAbove = generateNeighborBoard(blankTileIndex, blankTileIndex < 6 ? blankTileIndex + 3 : -1);
-        Board slideRight = generateNeighborBoard(blankTileIndex, blankTileIndex % 3 > 0 ? blankTileIndex - 1  : -1);
-        Board slideLeft = generateNeighborBoard(blankTileIndex, blankTileIndex % 3 < 2 ? blankTileIndex + 1  : -1);
+        Board slideBelow = generateNeighborBoard(blankTileIndex, blankTileIndex > n - 1 ? blankTileIndex - n : -1);
+        Board slideAbove = generateNeighborBoard(blankTileIndex, blankTileIndex < n * 2 ? blankTileIndex + n : -1);
+        Board slideRight = generateNeighborBoard(blankTileIndex, blankTileIndex % n > 0 ? blankTileIndex - 1  : -1);
+        Board slideLeft = generateNeighborBoard(blankTileIndex, blankTileIndex % n < n - 1 ? blankTileIndex + 1  : -1);
+
+//        Board slideBelow = generateNeighborBoard(blankTileIndex, blankTileIndex > 2 ? blankTileIndex - 3 : -1);
+//        Board slideAbove = generateNeighborBoard(blankTileIndex, blankTileIndex < 6 ? blankTileIndex + 3 : -1);
+//        Board slideRight = generateNeighborBoard(blankTileIndex, blankTileIndex % 3 > 0 ? blankTileIndex - 1  : -1);
+//        Board slideLeft = generateNeighborBoard(blankTileIndex, blankTileIndex % 3 < 2 ? blankTileIndex + 1  : -1);
         if (slideBelow != null)
             boardsNeighbor.enqueue(slideBelow);
         if (slideAbove != null)

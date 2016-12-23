@@ -47,7 +47,7 @@ public class Solver {
         solvable = runAStarAlgorithm(initial);
         if (solvable) {
             StdOut.println(initial);
-            StdOut.println("This board is solvable.");
+            StdOut.println("This board is solvable with " + moves() + " moves.");
         }
 //        solvable = runAStarAlgorithm(initial.twin());
     }
@@ -55,10 +55,11 @@ public class Solver {
     private boolean runAStarAlgorithm(Board initial) {
         minPQ.insert(new SearchNode(initial, 0, null));
         while (!minPQ.isEmpty()) {
+
             // retrieve node with least/minimum priority
             SearchNode parent = minPQ.delMin();
 
-            // goal board found
+            // It's is solved.
             if (parent.board().isGoal()) {
                 goalNode = parent;
                 return true;
@@ -68,12 +69,8 @@ public class Solver {
             for (Board child : parent.board().neighbors()) {
                 SearchNode node = new SearchNode(child, parent.moves() + 1, parent);
                 SearchNode grandParent = parent.getPrevNode();
-                if (grandParent == null)
+                if (grandParent == null || !node.board().equals(grandParent.board()))
                     minPQ.insert(node);
-                else {
-                    if (!node.board().equals(grandParent.board()))
-                        minPQ.insert(node);
-                }
             }
         }
         return false;
