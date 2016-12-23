@@ -11,29 +11,38 @@ public class Solver {
     private boolean solvable;
     private SearchNode goalNode;
 
-    private MinPQ<SearchNode> minPQ = new MinPQ<>(100, new Comparator<SearchNode>() {
+    Comparator<SearchNode> comparator = new Comparator<SearchNode>() {
         @Override
         public int compare(SearchNode a, SearchNode b) {
-            return a.priorityManhattan() - b.priorityManhattan() ;
+            // break ties
+            if (a.priorityManhattan() == b.priorityManhattan())
+                return a.priorityHamming() - b.priorityHamming();
+            else
+                return a.priorityManhattan() - b.priorityManhattan();
         }
-    });
+    };
+
+    private MinPQ<SearchNode> minPQ = new MinPQ<>(100, comparator);
+    private MinPQ<SearchNode> minTwinPQ = new MinPQ<>(100, comparator);
 
     class SearchNode {
         Board board;
         int moves;  // total moves so far
         SearchNode prevNode;
-        int priority;
+        int manhattanPriority, hammingPriority;
 
         SearchNode(Board b, int n, SearchNode previous) {
             board = b;
             moves = n;
             prevNode = previous;
-            priority = moves + b.manhattan();
+            manhattanPriority = moves + b.manhattan();
+            hammingPriority = moves + b.hamming();
         }
 
         SearchNode getPrevNode() { return prevNode; }
         int moves() { return moves; }
-        int priorityManhattan() { return priority; }
+        int priorityManhattan() { return manhattanPriority; }
+        int priorityHamming() { return hammingPriority; }
         public Board board() { return board; }
     };
 
@@ -43,34 +52,47 @@ public class Solver {
      * @param initial
      */
     public Solver(Board initial) {
-
-        solvable = runAStarAlgorithm(initial);
-        if (solvable) {
-            StdOut.println(initial);
-            StdOut.println("This board is solvable with " + moves() + " moves.");
+        if (initial == null) {
+            throw new NullPointerException("Initial board is null.");
         }
-//        solvable = runAStarAlgorithm(initial.twin());
+        Board twin = initial.twin();
+        solvable = runAStar(initial, twin);
     }
 
-    private boolean runAStarAlgorithm(Board initial) {
+    private boolean runAStar(Board initial, Board twin) {
+        // insert initial a node without parent to queue
         minPQ.insert(new SearchNode(initial, 0, null));
-        while (!minPQ.isEmpty()) {
-
-            // retrieve node with least/minimum priority
+        minTwinPQ.insert(new SearchNode(twin, 0, null));
+        // process the queue
+        int moves = 0;
+        while (moves < 1000 && !minPQ.isEmpty() && !minTwinPQ.isEmpty()) {
+            // Make a next move by sliding a tile 1 step (down,below,left,right)
+            // by retrieving a node with least priority
             SearchNode parent = minPQ.delMin();
-
-            // It's is solved.
+            SearchNode parentTwin = minTwinPQ.delMin();
+            // Goal board found. It's is solved.
             if (parent.board().isGoal()) {
                 goalNode = parent;
                 return true;
+            } else if (parentTwin.board().isGoal()) {
+                goalNode = parentTwin;
+                return true;
             }
-
-            // insert neighbour nodes to priority queue
+            // Select the next move by selecting a tile from neighboring blank tile.
+            // There will be between 2 to 4 potential tiles to select depending on
+            // position of the blank tile. This is done by inserting neighbour nodes
+            // to priority queue
             for (Board child : parent.board().neighbors()) {
                 SearchNode node = new SearchNode(child, parent.moves() + 1, parent);
                 SearchNode grandParent = parent.getPrevNode();
                 if (grandParent == null || !node.board().equals(grandParent.board()))
                     minPQ.insert(node);
+            }
+            for (Board child : parentTwin.board().neighbors()) {
+                SearchNode node = new SearchNode(child, parentTwin.moves() + 1, parentTwin);
+                SearchNode grandParent = parentTwin.getPrevNode();
+                if (grandParent == null || !node.board().equals(grandParent.board()))
+                    minTwinPQ.insert(node);
             }
         }
         return false;
@@ -90,14 +112,17 @@ public class Solver {
      *
      * @return
      */
-    public int moves() { return goalNode.moves(); }
-
+    public int moves() {
+        if (solvable) return goalNode.moves();
+        else return -1;
+    }
     /**
      * sequence of boards in a shortest solution
      *
      * @return
      */
     public Iterable<Board> solution() {
+        if (!solvable) return null;
         Stack<Board> stack = new Stack<>();
         for (SearchNode node = goalNode; node != null; node = node.getPrevNode())
             stack.push(node.board());
