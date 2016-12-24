@@ -6,9 +6,9 @@ import java.util.Arrays;
 public class Board {
 
     private final int[] tiles;
-    private final int n;  // one-side dimension
+    private final int n;            // N - one-side dimension
     private final int blankTileIndex;
-    private final int dimension;
+    private final int dimension;    // NxN grid
     private final int manhattan;
     private final int hamming;
 
@@ -36,12 +36,9 @@ public class Board {
                     String s = String.format("Board should contain integers between 0 and %d", dimension - 1);
                     throw new IllegalArgumentException(s);
                 }
-
                 if (blocks[i][j] == 0) nBlankSquare++;
-                // map 2d index to 1d
-                k = xyTo1D(i, j);
                 // set initial tiles
-                tiles[k] = blocks[i][j];
+                tiles[xyTo1D(i, j)] = blocks[i][j];
             }
         }
         blankTileIndex = indexOf(0);
@@ -65,7 +62,7 @@ public class Board {
     /**
      * Number of blocks in wrong position
      *
-     * Performance O(N^2)
+     * Performance O(1)
      *
      * @return
      */
@@ -89,12 +86,15 @@ public class Board {
      * @return
      */
     public boolean isGoal() {
+        return Arrays.equals(tiles, getGoalTiles());
+    }
+
+    private int[] getGoalTiles() {
         int[] goalTiles = new int[dimension];
         for (int i = 0; i < (dimension - 1); i++)
             goalTiles[i] = i + 1;
-        return Arrays.equals(tiles, goalTiles);
+        return goalTiles;
     }
-
     /**
      * a board that is obtained by exchanging any pair of blocks
      *
@@ -150,9 +150,7 @@ public class Board {
      * @return
      */
     public Iterable<Board> neighbors() {
-
         Queue<Board> boardsNeighbor = new Queue<>();
-
         // Generate adjacent boards: no of boards can be from 2 to 4
         // blanktile at corner              - 2 adjacent boards
         // blanktile at one-sided boundary  - 3 adjacent boards
@@ -244,7 +242,7 @@ public class Board {
         return manhattanDist;
     }
 
-    // tileAt(row,col) to remove before submission - this method only for visualizer
+// tileAt(row,col) to remove before submission - this method only for visualizer
 //    public int tileAt(int row, int col) {
 //        return tiles[xyTo1D(row, col)];
 //    }

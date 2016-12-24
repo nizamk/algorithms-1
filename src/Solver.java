@@ -25,7 +25,6 @@ public class Solver {
         }
     };
 
-
     private class SearchNode {
         Board board;
         int moves;  // total moves so far
@@ -67,26 +66,27 @@ public class Solver {
         // insert initial a node without parent to queue
         minPQ.insert(new SearchNode(initial, 0, null));
         minTwinPQ.insert(new SearchNode(twin, 0, null));
-        // process the queue
+
+        // Main processing loop. Retrieve the next SearchNode instance from the queue.
+        // Process minPQ for both initial puzzle and twin puzzle in lockstep (alternating)
         int moves = 0;
         while (moves < 1000 && !minPQ.isEmpty() && !minTwinPQ.isEmpty()) {
-            // Make a next move by sliding a tile 1 step (down,below,left,right)
-            // by retrieving a node with least priority
+            // Make a next move by sliding a tile 1 step (Down,Up,Left,Right).
+            // It's done by retrieving a node with least priority
             SearchNode parent = minPQ.delMin();
             SearchNode parentTwin = minTwinPQ.delMin();
             if (parent.board().isGoal()) {
                 // Goal board found. It's is solved.
                 return parent;
             } else if (parentTwin.board().isGoal()) {
-                // If twin solved meaning the original is unsolvable.
-                // So return null;
                 StdOut.println("Twin goal board found; original puzzle is unsolvable.");
+                // If twin solved the puzzle, it means the
+                // original is unsolvable. So return null;
                 return null;
             }
-            // Select the next move by selecting a tile from neighboring blank tile.
-            // There will be between 2 to 4 potential tiles to select depending on
-            // position of the blank tile. This is done by inserting neighbour nodes
-            // to priority queue
+            // Select the next move by selecting a tile from blank tile neighbors. There
+            // will be between 2 to 4 potential tiles to select depending on position of
+            // the blank tile. This is done by inserting neighbour nodes to priority queue
             for (Board child : parent.board().neighbors()) {
                 SearchNode node = new SearchNode(child, parent.moves() + 1, parent);
                 SearchNode grandParent = parent.getPrevNode();

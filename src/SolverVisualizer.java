@@ -138,12 +138,12 @@ public class SolverVisualizer {
                     for (int row = 0; row < N; row++) {
                         for (int col = 0; col < N; col++) {
 //                            int tile = 2;
-                            int tile = board.tileAt(row, col);
+//                            int tile = board.tileAt(row, col);
 
                             // if this position was previously empty
-                            if (tileAt[row][col] == 0)
-                                movingTile = tile; // animate the tile into it
-                            tileAt[row][col] = tile;
+//                            if (tileAt[row][col] == 0)
+//                                movingTile = tile; // animate the tile into it
+//                            tileAt[row][col] = tile;
                         }
                     }
                     animateMove(); // show move (or static initial state 1st time)
