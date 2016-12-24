@@ -58,6 +58,7 @@ public class Solver {
         moves = goalNode != null ? goalNode.moves() : -1;
     }
 
+    // A* Algorithm - algorithm for minimum cost movement
     private SearchNode runAStar(Board initial, Board twin) {
 
         MinPQ<SearchNode> minPQ = new MinPQ<>(100, comparator);
