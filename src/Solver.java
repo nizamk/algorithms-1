@@ -6,24 +6,25 @@ import edu.princeton.cs.algs4.StdOut;
 import java.util.Comparator;
 import java.util.Iterator;
 
+/**
+ * class Solver is immutable
+ *
+ */
 public class Solver {
 
-    private boolean solvable;
-    private SearchNode goalNode;
-
-    private Comparator<SearchNode> comparator = new Comparator<SearchNode>() {
+    private final boolean solvable;
+    private final SearchNode goalNode;
+    private final int moves;
+    private final Comparator<SearchNode> comparator = new Comparator<SearchNode>() {
         @Override
         public int compare(SearchNode a, SearchNode b) {
-            // break ties
             if (a.priorityManhattan() == b.priorityManhattan())
                 return a.priorityHamming() - b.priorityHamming();
-            else
+            else // break ties
                 return a.priorityManhattan() - b.priorityManhattan();
         }
     };
 
-    private MinPQ<SearchNode> minPQ = new MinPQ<>(100, comparator);
-    private MinPQ<SearchNode> minTwinPQ = new MinPQ<>(100, comparator);
 
     private class SearchNode {
         Board board;
@@ -52,14 +53,17 @@ public class Solver {
      * @param initial
      */
     public Solver(Board initial) {
-        if (initial == null) {
+        if (initial == null)
             throw new NullPointerException("Initial board is null.");
-        }
-        Board twin = initial.twin();
-        solvable = runAStar(initial, twin);
+        solvable = ((goalNode = runAStar(initial, initial.twin())) != null ? true : false);
+        moves = goalNode != null ? goalNode.moves() : -1;
     }
 
-    private boolean runAStar(Board initial, Board twin) {
+    private SearchNode runAStar(Board initial, Board twin) {
+
+        MinPQ<SearchNode> minPQ = new MinPQ<>(100, comparator);
+        MinPQ<SearchNode> minTwinPQ = new MinPQ<>(100, comparator);
+
         // insert initial a node without parent to queue
         minPQ.insert(new SearchNode(initial, 0, null));
         minTwinPQ.insert(new SearchNode(twin, 0, null));
@@ -70,15 +74,14 @@ public class Solver {
             // by retrieving a node with least priority
             SearchNode parent = minPQ.delMin();
             SearchNode parentTwin = minTwinPQ.delMin();
-            // Goal board found. It's is solved.
             if (parent.board().isGoal()) {
-                goalNode = parent;
-                StdOut.println("goal found");
-                return true;
+                // Goal board found. It's is solved.
+                return parent;
             } else if (parentTwin.board().isGoal()) {
-                goalNode = parentTwin;
-                StdOut.println("twin goal found");
-                return true;
+                // If twin solved meaning the original is unsolvable.
+                // So return null;
+                StdOut.println("Twin goal board found; original puzzle is unsolvable.");
+                return null;
             }
             // Select the next move by selecting a tile from neighboring blank tile.
             // There will be between 2 to 4 potential tiles to select depending on
@@ -97,8 +100,7 @@ public class Solver {
                     minTwinPQ.insert(node);
             }
         }
-        StdOut.println("Goal not found");
-        return false;
+        return null;
     }
 
     /**
@@ -116,8 +118,7 @@ public class Solver {
      * @return
      */
     public int moves() {
-        if (solvable) return goalNode.moves();
-        else return -1;
+        return moves;
     }
     /**
      * sequence of boards in a shortest solution

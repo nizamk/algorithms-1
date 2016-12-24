@@ -5,13 +5,12 @@ import java.util.Arrays;
 
 public class Board {
 
-    private int[] tiles;
-    private int n;  // one-side dimension
-    private int blankTileIndex;
-    private int dimension;
-    private int manhattan;
-    private int hamming;
-    private Queue<Board> boardsNeighbor = new Queue<>();
+    private final int[] tiles;
+    private final int n;  // one-side dimension
+    private final int blankTileIndex;
+    private final int dimension;
+    private final int manhattan;
+    private final int hamming;
 
     /**
      * construct a board from an N-by-N array of blocks
@@ -46,9 +45,8 @@ public class Board {
             }
         }
         blankTileIndex = indexOf(0);
-        manhattan = 0;
-        hamming = 0;
-        calculateHammingAndManhattanPriorityDistance();
+        manhattan = calculateManhattanDistance();
+        hamming = calculateHammingDistance();
 
         if (nBlankSquare == 0)
             throw new IllegalArgumentException("One block should be designated as blank square with value of 0.");
@@ -92,9 +90,8 @@ public class Board {
      */
     public boolean isGoal() {
         int[] goalTiles = new int[dimension];
-        for (int i = 0; i < (dimension - 1); i++) {
+        for (int i = 0; i < (dimension - 1); i++)
             goalTiles[i] = i + 1;
-        }
         return Arrays.equals(tiles, goalTiles);
     }
 
@@ -120,9 +117,8 @@ public class Board {
     }
 
     private boolean swap(int i, int j, int it, int jt) {
-        if (it < 0 || it >= n || jt < 0 || jt >= n) {
+        if (it < 0 || it >= n || jt < 0 || jt >= n)
             return false;
-        }
         int k = xyTo1D(i, j);
         int l = xyTo1D(it, jt);
         int temp = tiles[k];
@@ -143,10 +139,8 @@ public class Board {
     public boolean equals(Object y)    {
         if (this == y) return true;
         if (y == null) return false;
-        if (y instanceof Board) {
-            Board other = (Board) y;
-            return Arrays.equals(tiles, other.tiles);
-        }
+        if (y instanceof Board)
+            return Arrays.equals(tiles, ((Board)y).tiles);
         return false;
     }
 
@@ -156,18 +150,21 @@ public class Board {
      * @return
      */
     public Iterable<Board> neighbors() {
+
+        Queue<Board> boardsNeighbor = new Queue<>();
+
         // Generate adjacent boards: no of boards can be from 2 to 4
-        // if blanktile at corner - 2 adjacent boards
-        // if blanktile at one-sided boundary - 3 adjacent boards
-        // otherwise 4 adjancent boards
-        Board slideBelow = generateNeighborBoard(blankTileIndex, blankTileIndex > n - 1 ? blankTileIndex - n : -1);
-        Board slideAbove = generateNeighborBoard(blankTileIndex, blankTileIndex < n * (n - 1) ? blankTileIndex + n : -1);
+        // blanktile at corner              - 2 adjacent boards
+        // blanktile at one-sided boundary  - 3 adjacent boards
+        // blanktile in other locations     - 4 adjancent boards
+        Board slideDown = generateNeighborBoard(blankTileIndex, blankTileIndex > n - 1 ? blankTileIndex - n : -1);
+        Board slideUp = generateNeighborBoard(blankTileIndex, blankTileIndex < n * (n - 1) ? blankTileIndex + n : -1);
         Board slideRight = generateNeighborBoard(blankTileIndex, blankTileIndex % n > 0 ? blankTileIndex - 1 : -1);
         Board slideLeft = generateNeighborBoard(blankTileIndex, blankTileIndex % n < n - 1 ? blankTileIndex + 1 : -1);
-        if (slideBelow != null)
-            boardsNeighbor.enqueue(slideBelow);
-        if (slideAbove != null)
-            boardsNeighbor.enqueue(slideAbove);
+        if (slideDown != null)
+            boardsNeighbor.enqueue(slideDown);
+        if (slideUp != null)
+            boardsNeighbor.enqueue(slideUp);
         if (slideRight != null)
             boardsNeighbor.enqueue(slideRight);
         if (slideLeft != null)
@@ -211,9 +208,7 @@ public class Board {
 
     private Board generateNeighborBoard(int blankTileIndex, int slideFromTileIndex) {
         // blank index at the boundary
-        if (slideFromTileIndex == -1)
-            return null;
-
+        if (slideFromTileIndex == -1) return null;
         int[] newTiles = Arrays.copyOf(tiles, tiles.length);
         newTiles[blankTileIndex] = tiles[slideFromTileIndex];
         newTiles[slideFromTileIndex] = 0;
@@ -227,21 +222,32 @@ public class Board {
         return thisTiles;
     }
 
-    private void calculateHammingAndManhattanPriorityDistance() {
+    private int calculateHammingDistance() {
         int expect = 0;
+        int hammingDist = 0;
         for (int i = 0; i < dimension; i++) {
             expect++;
-            if (tiles[i] != 0 && tiles[i] != expect) {
-                hamming++;
-                manhattan += manhattanDistance(i, tiles[i] - 1);
-            }
+            if (tiles[i] != 0 && tiles[i] != expect)
+                hammingDist++;
         }
+        return hammingDist;
     }
 
-    // tileAt(row,col) todo -  to remove before submission - this method only for visualizer
-    public int tileAt(int row, int col) {
-        return tiles[xyTo1D(row, col)];
+    private int calculateManhattanDistance() {
+        int expect = 0;
+        int manhattanDist = 0;
+        for (int i = 0; i < dimension; i++) {
+            expect++;
+            if (tiles[i] != 0 && tiles[i] != expect)
+                manhattanDist += manhattanDistance(i, tiles[i] - 1);
+        }
+        return manhattanDist;
     }
+
+    // tileAt(row,col) to remove before submission - this method only for visualizer
+//    public int tileAt(int row, int col) {
+//        return tiles[xyTo1D(row, col)];
+//    }
 
 
     /**
