@@ -54,7 +54,7 @@ public class Solver {
     public Solver(Board initial) {
         if (initial == null)
             throw new NullPointerException("Initial board is null.");
-        solvable = ((goalNode = runAStar(initial, initial.twin())) != null ? true : false);
+        solvable = (goalNode = runAStar(initial, initial.twin())) != null;
         moves = goalNode != null ? goalNode.moves() : -1;
     }
 
@@ -77,7 +77,7 @@ public class Solver {
             SearchNode parent = minPQ.delMin();
             SearchNode parentTwin = minTwinPQ.delMin();
             if (parent.board().isGoal()) {
-                // Goal board found. It's is solved.
+                // Goal board found. It's solved.
                 return parent;
             } else if (parentTwin.board().isGoal()) {
                 StdOut.println("Twin goal board found; original puzzle is unsolvable.");
@@ -128,10 +128,15 @@ public class Solver {
      */
     public Iterable<Board> solution() {
         if (!solvable) return null;
-        Stack<Board> stack = new Stack<>();
-        for (SearchNode node = goalNode; node != null; node = node.getPrevNode())
+        return push(goalNode, new Stack<Board>());
+    }
+
+    private Stack<Board> push(SearchNode node, Stack<Board> stack) {
+        if (node == null) return stack;
+        else {
             stack.push(node.board());
-        return stack;
+            return push(node.getPrevNode(), stack);
+        }
     }
 
     // solve a slider puzzle (code given below)
