@@ -17,6 +17,7 @@ public class KdTree {
      * @return
      */
     public boolean isEmpty() {
+        //todo - isEmpty()
         return false;
     }
 
@@ -26,6 +27,7 @@ public class KdTree {
      * @return
      */
     public int size() {
+        //todo- size()
         return 0;
     }
 
@@ -34,6 +36,7 @@ public class KdTree {
      * @param point2D
      */
     public void insert(Point2D point2D) {
+        //todo-insert()
 
     }
 
@@ -44,6 +47,7 @@ public class KdTree {
      * @return
      */
     public boolean contains(Point2D point2D) {
+        //todo -contains()
         return false;
     }
 
@@ -51,7 +55,7 @@ public class KdTree {
      * draw all points to standard draw
      */
     public void draw() {
-
+        //todo-draw()
     }
 
     /**
@@ -61,6 +65,7 @@ public class KdTree {
      * @return
      */
     public Iterable<Point2D> range(RectHV rectHV) {
+        //todo -range()
         return new Iterable<Point2D>() {
             @Override
             public Iterator<Point2D> iterator() {
@@ -77,6 +82,7 @@ public class KdTree {
      * @return
      */
     public Point2D nearest(Point2D p) {
+        //todo-nearest()
         return new Point2D(1, 2);
     }
 }
