@@ -6,7 +6,7 @@ import java.util.List;
 
 public class PointSET {
 
-    SET<Point2D> points;
+    private SET<Point2D> points;
 
     /**
      * construct an empty set of points

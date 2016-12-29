@@ -6,7 +6,8 @@ import java.util.*;
 
 public class FastCollinearPoints {
 
-    private HashMap<Double, List<Point>> foundSegments = new HashMap<>();
+    private List<List<Point>> foundSegments = new ArrayList<>();
+    private HashMap<String, LineSegment> segmentExisted = new HashMap<>();
     private List<LineSegment> lines = new ArrayList<>();
 
     /**
@@ -15,91 +16,101 @@ public class FastCollinearPoints {
      * @param points
      */
     public FastCollinearPoints(Point[] points) {
-        // Do not mutate constructor argument
-        Point[] pointsCopy = Arrays.copyOf(points, points.length);
 
-        for (Point pivot : points) {
-            Arrays.sort(pointsCopy, pivot.slopeOrder());
+        checkDuplicates(points);
+
+        // Do not mutate constructor argument
+        Point[] copy = Arrays.copyOf(points, points.length);
+
+        // for all points in the plane
+        for (Point origin : points) {
+
+            // sort other points according to the slope
+            Arrays.sort(copy, origin.slopeOrder());
+
             double prevSlope = Double.NEGATIVE_INFINITY;
             double slope = 0;
-            List<Point> slopePoints = new ArrayList<>();
-            for (int i = 1; i < pointsCopy.length; i++) {
-                slope = pivot.slopeTo(pointsCopy[i]);
+
+            List<Point> pointsInSlope = new ArrayList<>();
+            for (int i = 1; i < copy.length; i++) {
+                slope = origin.slopeTo(copy[i]);
                 if (slope == prevSlope) {
-                    slopePoints.add(pointsCopy[i]);
+                    pointsInSlope.add(copy[i]);
                 } else {
-                    if (slopePoints.size() >= 3) {
-                        slopePoints.add(pivot);
-//                        lines.add(new LineSegment(slopePoints.get(0), slopePoints.get(slopePoints.size()-1)));
-                        addNewSegment(slopePoints, slope);
+                    if (pointsInSlope.size() >= 3) {
+                        pointsInSlope.add(origin);
+                        addIfNewSegment(pointsInSlope, prevSlope);
                     }
-                    slopePoints.clear();
-                    slopePoints.add(pointsCopy[i]);
+
+                    // initialize first points
+                    pointsInSlope.clear();
+                    pointsInSlope.add(copy[i]);
                 }
                 prevSlope = slope;
             }
-            if (slopePoints.size() >= 3) {
-                slopePoints.add(pivot);
-                lines.add(new LineSegment(slopePoints.get(0), slopePoints.get(slopePoints.size()-1)));
-                addNewSegment(slopePoints, slope);
+            if (pointsInSlope.size() >= 3) {
+                pointsInSlope.add(origin);
+                addIfNewSegment(pointsInSlope, prevSlope);
             }
         }
-
     }
 
-    private void addNewSegment(List<Point> slopePoints, double slope) {
-        List<Point> endPoints = foundSegments.get(slope);
-        Collections.sort(slopePoints);
-
-        Point startPoint = slopePoints.get(0);
-        Point endPoint = slopePoints.get(slopePoints.size() - 1);
-
-        if (endPoints == null) {
-            endPoints = new ArrayList<>();
-            endPoints.add(endPoint);
-            foundSegments.put(slope, endPoints);
-            lines.add(new LineSegment(startPoint, endPoint));
-        } else {
-            for (Point currentEndPoint : endPoints) {
-                if (currentEndPoint.compareTo(endPoint) == 0) {
-                    return;
+    private void checkDuplicates(Point[] points) {
+        for (int i = 0; i < points.length; i++) {
+            for (int j = i + 1; j < points.length; j++) {
+                if (points[i].compareTo(points[j]) == 0) {
+                    throw new IllegalArgumentException("Duplicate points.");
                 }
             }
-            endPoints.add(endPoint);
-            lines.add(new LineSegment(startPoint, endPoint));
         }
     }
 
-    private void addSegmentIfNew(List<Point> slopePoints, double slope) {
-        List<Point> endPoints = foundSegments.get(slope);
-        Collections.sort(slopePoints);
-
-        Point startPoint = slopePoints.get(0);
-        Point endPoint = slopePoints.get(slopePoints.size() - 1);
-
-        if (endPoints == null) {
-            endPoints = new ArrayList<>();
-            endPoints.add(endPoint);
-            foundSegments.put(slope, endPoints);
-            lines.add(new LineSegment(startPoint, endPoint));
-        } else {
-            for (Point currentEndPoint : endPoints) {
-                if (currentEndPoint.compareTo(endPoint) == 0) {
-                    return;
-                }
-            }
-            endPoints.add(endPoint);
-            lines.add(new LineSegment(startPoint, endPoint));
-        }
+    private static String getMapKey(Point start, Point end, double slope) {
+        return String.valueOf(slope) + "_" +  start + "_" + end;
     }
 
-
-    private void showPoints(Point[] points) {
-        for (Point p : points) {
-            StdOut.print(p + " ");
+    private void addIfNewSegment(List<Point> pointsInSlope, double slope) {
+        Collections.sort(pointsInSlope);
+        Point start = pointsInSlope.get(0);
+        Point end = pointsInSlope.get(pointsInSlope.size() - 1);
+        String key = getMapKey(start, end, slope);
+        if (segmentExisted.get(key) == null) {
+            LineSegment line = new LineSegment(start, end);
+            lines.add(line);
+            segmentExisted.put(key, line);
         }
-        StdOut.println("");
+
+//        List<Point> endpoints = new ArrayList<>();
+//        endpoints.add(start);
+//        endpoints.add(end);
+//        if(!checkIfSegmentExist(start, end)) {
+//            lines.add(new LineSegment(start, end));
+//            foundSegments.add(endpoints);
+//        }
     }
+
+//    private void addIfNewSegment(List<Point> pointsInSlope, double slope) {
+//        Collections.sort(pointsInSlope);
+//        Point start = pointsInSlope.get(0);
+//        Point end = pointsInSlope.get(pointsInSlope.size() - 1);
+//        List<Point> endpoints = new ArrayList<>();
+//        endpoints.add(start);
+//        endpoints.add(end);
+//        if(!checkIfSegmentExist(start, end)) {
+//            lines.add(new LineSegment(start, end));
+//            foundSegments.add(endpoints);
+//        }
+//    }
+
+
+    private boolean checkIfSegmentExist(Point start, Point end) {
+        for (List<Point> segment : foundSegments) {
+            if ((segment.get(0) == start) && (segment.get(1) == end))
+                return true;
+        }
+        return false;
+    }
+
 
     /**
      * The number of line segments
