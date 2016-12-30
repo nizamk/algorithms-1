@@ -200,7 +200,7 @@ public class Board {
 
     private int indexOf(int val) {
         for (int i = 0; i < tiles.length; i++)
-            if (tiles[i] == 0) return i;
+            if (tiles[i] == val) return i;
         return -1;
     }
 
@@ -243,9 +243,9 @@ public class Board {
     }
 
 // tileAt(row,col) to remove before submission - this method only for visualizer
-//    public int tileAt(int row, int col) {
-//        return tiles[xyTo1D(row, col)];
-//    }
+    public int tileAt(int row, int col) {
+        return tiles[xyTo1D(row, col)];
+    }
 
 
     /**

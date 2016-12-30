@@ -79,29 +79,7 @@ public class FastCollinearPoints {
             lines.add(line);
             segmentExisted.put(key, line);
         }
-
-//        List<Point> endpoints = new ArrayList<>();
-//        endpoints.add(start);
-//        endpoints.add(end);
-//        if(!checkIfSegmentExist(start, end)) {
-//            lines.add(new LineSegment(start, end));
-//            foundSegments.add(endpoints);
-//        }
     }
-
-//    private void addIfNewSegment(List<Point> pointsInSlope, double slope) {
-//        Collections.sort(pointsInSlope);
-//        Point start = pointsInSlope.get(0);
-//        Point end = pointsInSlope.get(pointsInSlope.size() - 1);
-//        List<Point> endpoints = new ArrayList<>();
-//        endpoints.add(start);
-//        endpoints.add(end);
-//        if(!checkIfSegmentExist(start, end)) {
-//            lines.add(new LineSegment(start, end));
-//            foundSegments.add(endpoints);
-//        }
-//    }
-
 
     private boolean checkIfSegmentExist(Point start, Point end) {
         for (List<Point> segment : foundSegments) {

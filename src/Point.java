@@ -111,10 +111,9 @@ public class Point implements Comparable<Point> {
         return new Comparator<Point>() {
             @Override
             public int compare(Point q, Point r) {
-                double pq = slopeTo(q);
-                double pr = slopeTo(r);
-                double diff = pq - pr;
-//                StdOut.println("p: " + Point.this + " slope to => q: " + q + "," + pq + " r: " + r + "," + pr);
+                double pqSlope = slopeTo(q);
+                double prSlope = slopeTo(r);
+                double diff = pqSlope - prSlope;
                 if (diff > 0)
                     return 1;
                 else if (diff < 0)
