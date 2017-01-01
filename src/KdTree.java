@@ -1,11 +1,11 @@
-import edu.princeton.cs.algs4.Point2D;
-import edu.princeton.cs.algs4.RectHV;
-import edu.princeton.cs.algs4.RedBlackBST;
-import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.*;
 
+import java.awt.*;
 import java.util.Iterator;
 
 public class KdTree {
+
+    private static final int SCALE = 1000;
 
     private PointSET pointSET;
 
@@ -18,6 +18,10 @@ public class KdTree {
         private Node rt;        // right/top
 
         public Node(Point2D point) {
+            p = point;
+        }
+        public Node(Point2D point, RectHV boundingRect) {
+            rect = boundingRect;
             p = point;
         }
     }
@@ -58,49 +62,50 @@ public class KdTree {
      * @param p
      */
     public void insert(Point2D p) {
-        root = insert(root, p);
+        root = insert(root, p, new RectHV(0.0, 0.0, 1.0, 1.0));
     }
 
-    private Node insert(Node x, Point2D p) {
-        if (x == null) return new Node(p);
-
-        int level = getLevel(root, x.p);
-        StdOut.printf("p %s\n", p);
-        StdOut.printf("x.p %s\n", x.p);
-        double cmp = compare(p, x.p, level);
+    private Node insert(Node x, Point2D p, RectHV boundingRect) {
+        // todo - to put axis-aligned rectangle
+        if (x == null) {
+            StdOut.println("create new node " + p);
+            return new Node(p, boundingRect);
+        }
+        StdOut.printf("insert node %s, current node %s\n", p, x.p);
+        boolean evenOrientation = isEvenLevel(getLevel(root, x.p));
+        double cmp = compare(p, x.p, evenOrientation);
         if (cmp < 0) {
-            StdOut.printf("<- p  %s\n", p);
-            x.lb = insert(x.lb, p);
+            StdOut.printf("point %s LESS than parent %s, insert LEFT\n",p, x.p);
+            RectHV rect = (evenOrientation ?
+                    new RectHV(0.0, 0.0, p.x(), boundingRect.ymax()):   // todo - left bounding rectangle
+                    new RectHV(0.0, 0.0, p.x(), boundingRect.ymax()));  // todo - bottom bounding rectangle
+            x.lb = insert(x.lb, p, rect);
         } else if (cmp > 0) {
-            StdOut.printf("-> p %s\n", p);
-            x.rt = insert(x.rt, p);
+            StdOut.printf("point %s GREATER than parent %s, insert RIGHT\n",p, x.p);
+            RectHV rect = (evenOrientation ?
+                    new RectHV(p.x(), boundingRect.ymin(), boundingRect.xmax(), boundingRect.ymax()):   // todo - right bounding rectangle
+                    new RectHV(0.0, 0.0, p.x(), boundingRect.ymax()));  // todo - top bounding rectangle
+            x.rt = insert(x.rt, p, rect);
         } else {
             ;
-        } // Found. Do nothing.
+        } // found. Do nothing
         return x;
     }
 
-    private double compare(Point2D p, Point2D x, int level) {
-        if ((level % 2) == 0) { // even
-            StdOut.printf("Level %d, %s\n", level, ((level % 2) == 0 ? "EVEN" : "ODD"));
-            return p.x() - x.x();
+    private double compare(Point2D p, Point2D x, boolean even) {
+        double cmp;
+        if (even) {
+            cmp = p.x() - x.x();
+            StdOut.println("EVEN level x-compare: " + cmp);
+            return cmp;
         } else {
-            StdOut.printf("Level %d, %s\n", level, ((level % 2) == 0 ? "EVEN" : "ODD"));
-            return p.y() - x.y();
+            cmp = p.y() - x.y();
+            StdOut.println("ODD level y-compare: " + cmp);
+            return cmp;
         }
     }
 
-//    private Node insert(Node x, Point2D p) {
-//        if (x == null) return new Node(p);
-//
-//        int cmp = p.compareTo(x.p);
-//        if (cmp < 0) x.lb = insert(x.lb, p);
-//        else if (cmp > 0) x.rt = insert(x.rt, p);
-//        else {
-//            ;
-//        } // Found. Do nothing.
-//        return x;
-//    }
+    private boolean isEvenLevel(int level) { return (level % 2) == 0; }
 
     /**
      * does the set contain point p?
@@ -108,22 +113,18 @@ public class KdTree {
      * @param p
      * @return
      */
-    public boolean contains(Point2D p) {
-        return search(root, p);
-    }
+    public boolean contains(Point2D p) { return search(root, p); }
 
     private boolean search(Node x, Point2D p) {
         if (x == null) return false;
-
+        //todo - to fix
         int cmp = p.compareTo(x.p);
         if (cmp < 0) return search(x.lb, p);
         else if (cmp > 0) return search(x.rt, p);
         else return true;
     }
 
-    private int getLevel(Node x, Point2D p) {
-        return getLevel(x, p, 0);
-    }
+    private int getLevel(Node x, Point2D p) { return getLevel(x, p, 0); }
 
     private int getLevel(Node x, Point2D p, int level) {
         if (x == null) return 0;
@@ -135,24 +136,55 @@ public class KdTree {
         return downlevel;
     }
 
-    private void visitInOrder(Node x) {
+    private void inOrderTraversal(Node x) {
         if (x == null) return;
-        visitInOrder(x.lb);
+        inOrderTraversal(x.lb);
         visit(x);
-        visitInOrder(x.rt);
+        inOrderTraversal(x.rt);
     }
 
-    private void visit(Node x) {
-        int level = getLevel(root, x.p);
-        StdOut.printf("visited %s, level %d, %s\n", x.p, level, (level % 2) == 0? "draw Vertical RED": "draw Horizontal Blue" );
+    private void visit(Node x) { drawNode(x, isEvenLevel(getLevel(root, x.p))); }
+
+    private void drawNode(Node node, boolean even) {
+        StdDraw.setPenRadius(0.003);
+        StdOut.printf("%s ", node.p);
+        if (even) drawVLine(node.p.x(), node.p.y());
+        else drawHLine(node.p.x(), node.p.y());
+        drawPoint(node.p.x(), node.p.y());
+        StdDraw.show();
+    }
+
+    private void drawPoint(double x, double y) {
+        StdDraw.setPenColor(Color.BLACK);
+        StdDraw.filledCircle(x * SCALE, (int) (y * SCALE), 5);
+    }
+
+    private void drawVLine(double x, double y) {
+        StdOut.println("draw Vertical RED");
+        int x0 = (int) (x * SCALE);
+        int y0 = 0 * SCALE;
+        int x1 = (int) (x * SCALE);
+        int y1 = (int) (1 * SCALE);
+        StdDraw.setPenColor(Color.RED);
+        StdDraw.line(x0, y0, x1, y1);
+    }
+
+    private void drawHLine(double x, double y) {
+        StdOut.println("draw Horizontal BLUE");
+        StdDraw.setPenColor(Color.blue);
+//        StdDraw.line(x0, y0, x1, y1);
     }
 
     /**
      * draw all points to standard draw
+     *
      */
     public void draw() {
-        //todo-draw()
-        visitInOrder(root);
+        StdDraw.enableDoubleBuffering();
+        StdDraw.setXscale(0, SCALE);
+        StdDraw.setYscale(0, SCALE);
+
+        inOrderTraversal(root);
     }
 
     /**
