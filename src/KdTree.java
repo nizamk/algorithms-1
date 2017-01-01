@@ -6,6 +6,7 @@ import java.util.Iterator;
 public class KdTree {
 
     private static final int SCALE = 1000;
+    private static final int N = 1;
 
     private PointSET pointSET;
 
@@ -62,45 +63,42 @@ public class KdTree {
      * @param p
      */
     public void insert(Point2D p) {
-        root = insert(root, p, new RectHV(0.0, 0.0, 1.0, 1.0));
+        root = insert(root, p, new RectHV(0, 0, N, N));
     }
 
-    private Node insert(Node x, Point2D p, RectHV boundingRect) {
-        // todo - to put axis-aligned rectangle
-        if (x == null) {
-            StdOut.println("create new node " + p);
+    private Node insert(Node node, Point2D p, RectHV boundingRect) {
+        if (node == null) {
+            StdOut.println("created new node " + p + ", bounding rect " + boundingRect + "\n");
             return new Node(p, boundingRect);
         }
-        StdOut.printf("insert node %s, current node %s\n", p, x.p);
-        boolean evenOrientation = isEvenLevel(getLevel(root, x.p));
-        double cmp = compare(p, x.p, evenOrientation);
+        StdOut.printf("insert node %s, current node %s\n", p, node.p);
+        boolean evenOrientation = isEvenLevel(getLevel(root, node.p));
+        double cmp = compare(p, node.p, evenOrientation);
         if (cmp < 0) {
-            StdOut.printf("point %s LESS than parent %s, insert LEFT\n",p, x.p);
+            StdOut.printf("point %s LESS than parent %s, insert LEFT\n",p, node.p);
             RectHV rect = (evenOrientation ?
-                    new RectHV(0.0, 0.0, p.x(), boundingRect.ymax()):   // todo - left bounding rectangle
-                    new RectHV(0.0, 0.0, p.x(), boundingRect.ymax()));  // todo - bottom bounding rectangle
-            x.lb = insert(x.lb, p, rect);
-        } else if (cmp > 0) {
-            StdOut.printf("point %s GREATER than parent %s, insert RIGHT\n",p, x.p);
+                    new RectHV(boundingRect.xmin(), boundingRect.ymin(), node.p.x(), boundingRect.ymax()):  // even - left bounding rectangle
+                    new RectHV(boundingRect.xmin(), boundingRect.ymin(), node.p.x(), node.p.y()));          // odd - bottom bounding rectangle
+            node.lb = insert(node.lb, p, rect);
+        } else if (cmp >= 0) {
+            StdOut.printf("point %s GREATER/EQUAL than parent %s, insert RIGHT\n",p, node.p);
             RectHV rect = (evenOrientation ?
-                    new RectHV(p.x(), boundingRect.ymin(), boundingRect.xmax(), boundingRect.ymax()):   // todo - right bounding rectangle
-                    new RectHV(0.0, 0.0, p.x(), boundingRect.ymax()));  // todo - top bounding rectangle
-            x.rt = insert(x.rt, p, rect);
-        } else {
-            ;
-        } // found. Do nothing
-        return x;
+                    new RectHV(node.p.x(), boundingRect.ymin(), boundingRect.xmax(), boundingRect.ymax()):  // even - right bounding rectangle
+                    new RectHV(boundingRect.xmin(), node.p.y(), boundingRect.xmax(), boundingRect.ymax()));          // odd - top bounding rectangle
+            node.rt = insert(node.rt, p, rect);
+        } //else {;} // found. Do nothing
+        return node;
     }
 
     private double compare(Point2D p, Point2D x, boolean even) {
         double cmp;
         if (even) {
             cmp = p.x() - x.x();
-            StdOut.println("EVEN level x-compare: " + cmp);
+            StdOut.printf("EVEN level x-compare: %.2f\n", cmp);
             return cmp;
         } else {
             cmp = p.y() - x.y();
-            StdOut.println("ODD level y-compare: " + cmp);
+            StdOut.printf("ODD level y-compare: %.2f\n", cmp);
             return cmp;
         }
     }
@@ -126,6 +124,14 @@ public class KdTree {
 
     private int getLevel(Node x, Point2D p) { return getLevel(x, p, 0); }
 
+    private int height(Node t, Point2D p) {
+        if (t == null) return 0;
+        int hl = height(t.lb, p);
+        int hr = height(t.rt, p);
+        int h = 1 + Math.max(hl, hr);
+        return h;
+    }
+
     private int getLevel(Node x, Point2D p, int level) {
         if (x == null) return 0;
         if (p.compareTo(x.p) == 0) return level;
@@ -147,32 +153,38 @@ public class KdTree {
 
     private void drawNode(Node node, boolean even) {
         StdDraw.setPenRadius(0.003);
-        StdOut.printf("%s ", node.p);
-        if (even) drawVLine(node.p.x(), node.p.y());
-        else drawHLine(node.p.x(), node.p.y());
+        StdOut.printf("Node %s, ", node.p);
+        if (even) drawVLine(node);
+        else drawHLine(node);
         drawPoint(node.p.x(), node.p.y());
         StdDraw.show();
     }
 
     private void drawPoint(double x, double y) {
         StdDraw.setPenColor(Color.BLACK);
-        StdDraw.filledCircle(x * SCALE, (int) (y * SCALE), 5);
+        StdDraw.filledCircle(x * SCALE, (int) (y * SCALE), 8);
     }
 
-    private void drawVLine(double x, double y) {
+    private void drawVLine(Node node) {
         StdOut.println("draw Vertical RED");
-        int x0 = (int) (x * SCALE);
-        int y0 = 0 * SCALE;
-        int x1 = (int) (x * SCALE);
-        int y1 = (int) (1 * SCALE);
+        int x0 = (int) (node.p.x() * SCALE);
+        int y0 = (int) (node.rect.ymin() * SCALE);
+        int x1 = (int) (node.p.x() * SCALE);
+        int y1 = (int) (node.rect.ymax() * SCALE);
+        StdOut.printf("from (%d,%d) -> (%d,%d)\n", x0, y0, x1, y1);
         StdDraw.setPenColor(Color.RED);
         StdDraw.line(x0, y0, x1, y1);
     }
 
-    private void drawHLine(double x, double y) {
+    private void drawHLine(Node node) {
         StdOut.println("draw Horizontal BLUE");
+        int x0 = (int) (node.rect.xmin() * SCALE);
+        int y0 = (int) (node.p.y() * SCALE);
+        int x1 = (int) (node.rect.xmax() * SCALE);
+        int y1 = (int) (node.p.y() * SCALE);
+        StdOut.printf("from (%d,%d) -> (%d,%d)\n", x0, y0, x1, y1);
         StdDraw.setPenColor(Color.blue);
-//        StdDraw.line(x0, y0, x1, y1);
+        StdDraw.line(x0, y0, x1, y1);
     }
 
     /**
@@ -211,17 +223,8 @@ public class KdTree {
     }
 
     public static void main(String[] args) {
-        KdTree tree = new KdTree();
-        Point2D p = new Point2D(0.7,0.2 );
-        tree.insert(p);
-        p = new Point2D(0.5, 0.4);
-        tree.insert(p);
-        p = new Point2D(.2, .3);
-        tree.insert(p);
-        p = new Point2D(.4, .7);
-        tree.insert(p);
-        p = new Point2D(0.9, 0.6);
-        tree.insert(p);
-        tree.draw();
+
     }
+
+
 }

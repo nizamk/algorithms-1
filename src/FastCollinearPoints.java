@@ -24,7 +24,6 @@ public class FastCollinearPoints {
 
         // for all points in the plane
         for (Point origin : points) {
-
             // sort other points according to the slope
             Arrays.sort(copy, origin.slopeOrder());
 
@@ -80,15 +79,6 @@ public class FastCollinearPoints {
             segmentExisted.put(key, line);
         }
     }
-
-    private boolean checkIfSegmentExist(Point start, Point end) {
-        for (List<Point> segment : foundSegments) {
-            if ((segment.get(0) == start) && (segment.get(1) == end))
-                return true;
-        }
-        return false;
-    }
-
 
     /**
      * The number of line segments
