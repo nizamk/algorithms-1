@@ -5,7 +5,8 @@ import java.util.Iterator;
 
 public class KdTree {
 
-    private static final int SCALE = 1000;
+    private static final int SCALE = 1;
+//    private static final int SCALE = 1000;
     private static final int N = 1;
 
     private PointSET pointSET;
@@ -68,39 +69,38 @@ public class KdTree {
 
     private Node insert(Node node, Point2D p, RectHV boundingRect) {
         if (node == null) {
-            StdOut.println("created new node " + p + ", bounding rect " + boundingRect + "\n");
+            StdOut.println("created new node " + p + ", bounding rect [" + boundingRect.xmin() + "," + boundingRect.ymin() + "]" + "," +
+                    "[" + boundingRect.xmax() + "," + boundingRect.ymax() + "]\n");
             return new Node(p, boundingRect);
         }
-        StdOut.printf("insert node %s, current node %s\n", p, node.p);
         boolean evenOrientation = isEvenLevel(getLevel(root, node.p));
         double cmp = compare(p, node.p, evenOrientation);
         if (cmp < 0) {
-            StdOut.printf("point %s LESS than parent %s, insert LEFT\n",p, node.p);
+            if (evenOrientation)
+                StdOut.printf("%s insert LEFT of %s\n", p, node.p);
+            else
+                StdOut.printf("%s insert BOTTOM of %s\n", p, node.p);
+
             RectHV rect = (evenOrientation ?
                     new RectHV(boundingRect.xmin(), boundingRect.ymin(), node.p.x(), boundingRect.ymax()):  // even - left bounding rectangle
                     new RectHV(boundingRect.xmin(), boundingRect.ymin(), node.p.x(), node.p.y()));          // odd - bottom bounding rectangle
             node.lb = insert(node.lb, p, rect);
         } else if (cmp >= 0) {
-            StdOut.printf("point %s GREATER/EQUAL than parent %s, insert RIGHT\n",p, node.p);
+            if (evenOrientation)
+                StdOut.printf("%s insert RIGHT of %s\n", p, node.p);
+            else
+                StdOut.printf("%s insert TOP of %s\n", p, node.p);
             RectHV rect = (evenOrientation ?
                     new RectHV(node.p.x(), boundingRect.ymin(), boundingRect.xmax(), boundingRect.ymax()):  // even - right bounding rectangle
-                    new RectHV(boundingRect.xmin(), node.p.y(), boundingRect.xmax(), boundingRect.ymax()));          // odd - top bounding rectangle
+                    new RectHV(boundingRect.xmin(), node.p.y(), boundingRect.xmax(), boundingRect.ymax())); // odd - top bounding rectangle
             node.rt = insert(node.rt, p, rect);
-        } //else {;} // found. Do nothing
+        }
         return node;
     }
 
     private double compare(Point2D p, Point2D x, boolean even) {
-        double cmp;
-        if (even) {
-            cmp = p.x() - x.x();
-            StdOut.printf("EVEN level x-compare: %.2f\n", cmp);
-            return cmp;
-        } else {
-            cmp = p.y() - x.y();
-            StdOut.printf("ODD level y-compare: %.2f\n", cmp);
-            return cmp;
-        }
+        if (even) return p.x() - x.x();
+        else return p.y() - x.y();
     }
 
     private boolean isEvenLevel(int level) { return (level % 2) == 0; }
@@ -152,39 +152,27 @@ public class KdTree {
     private void visit(Node x) { drawNode(x, isEvenLevel(getLevel(root, x.p))); }
 
     private void drawNode(Node node, boolean even) {
-        StdDraw.setPenRadius(0.003);
-        StdOut.printf("Node %s, ", node.p);
-        if (even) drawVLine(node);
-        else drawHLine(node);
-        drawPoint(node.p.x(), node.p.y());
+        if (even)
+            drawVLine(node);
+        else
+            drawHLine(node);
+        drawPoint(node);
         StdDraw.show();
     }
 
-    private void drawPoint(double x, double y) {
+    private void drawPoint(Node node) {
         StdDraw.setPenColor(Color.BLACK);
-        StdDraw.filledCircle(x * SCALE, (int) (y * SCALE), 8);
+        StdDraw.filledCircle(node.p.x(), node.p.y(), 0.003);
     }
 
     private void drawVLine(Node node) {
-        StdOut.println("draw Vertical RED");
-        int x0 = (int) (node.p.x() * SCALE);
-        int y0 = (int) (node.rect.ymin() * SCALE);
-        int x1 = (int) (node.p.x() * SCALE);
-        int y1 = (int) (node.rect.ymax() * SCALE);
-        StdOut.printf("from (%d,%d) -> (%d,%d)\n", x0, y0, x1, y1);
         StdDraw.setPenColor(Color.RED);
-        StdDraw.line(x0, y0, x1, y1);
+        StdDraw.line(node.p.x(), node.rect.ymin(), node.p.x(), node.rect.ymax());
     }
 
     private void drawHLine(Node node) {
-        StdOut.println("draw Horizontal BLUE");
-        int x0 = (int) (node.rect.xmin() * SCALE);
-        int y0 = (int) (node.p.y() * SCALE);
-        int x1 = (int) (node.rect.xmax() * SCALE);
-        int y1 = (int) (node.p.y() * SCALE);
-        StdOut.printf("from (%d,%d) -> (%d,%d)\n", x0, y0, x1, y1);
         StdDraw.setPenColor(Color.blue);
-        StdDraw.line(x0, y0, x1, y1);
+        StdDraw.line(node.rect.xmin(), node.p.y(), node.rect.xmax(), node.p.y());
     }
 
     /**
@@ -195,7 +183,6 @@ public class KdTree {
         StdDraw.enableDoubleBuffering();
         StdDraw.setXscale(0, SCALE);
         StdDraw.setYscale(0, SCALE);
-
         inOrderTraversal(root);
     }
 
@@ -219,7 +206,17 @@ public class KdTree {
      */
     public Point2D nearest(Point2D p) {
         //todo-nearest()
-        return pointSET.nearest(p);
+        return nearest(root, p, 1);
+//        return pointSET.nearest(p);
+    }
+
+    private Point2D nearest(Node node, Point2D p, double champion) {
+        double distance = 2;
+        if (node == null) return p;
+
+        else {
+            return nearest(node.lb, p, distance);
+        }
     }
 
     public static void main(String[] args) {

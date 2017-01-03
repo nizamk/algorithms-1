@@ -36,9 +36,37 @@ public class KdTreeTest {
         tree.draw();
     }
 
+    public void test3Circle10() {
+
+        KdTree tree = new KdTree();
+        Point2D p = new Point2D(0.206107,0.095492 );
+        tree.insert(p);
+        p = new Point2D(0.975528, 0.654508);
+        tree.insert(p);
+        p = new Point2D(0.024472, 0.345492);
+        tree.insert(p);
+        p = new Point2D(0.793893, 0.095492);
+        tree.insert(p);
+        p = new Point2D(0.793893, 0.904508);
+        tree.insert(p);
+        p = new Point2D(0.975528, 0.345492);
+        tree.insert(p);
+        p = new Point2D(0.206107, 0.904508);
+        tree.insert(p);
+        p = new Point2D(0.500000, 0.000000);
+        tree.insert(p);
+        p = new Point2D(0.024472, 0.654508);
+        tree.insert(p);
+        p = new Point2D(0.500000, 1.000000);
+        tree.insert(p);
+
+        tree.draw();
+    }
+
     public static void main(String[] args) {
         KdTreeTest test = new KdTreeTest();
-        test.test2();
+        test.test3Circle10();
+//        test.test2();
 //        test.test1();
     }
 }
