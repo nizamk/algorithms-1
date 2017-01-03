@@ -1,25 +1,12 @@
 import edu.princeton.cs.algs4.Point2D;
+import edu.princeton.cs.algs4.StdOut;
 
 public class KdTreeTest {
 
-    public void test1() {
-        KdTree tree = new KdTree();
-        Point2D p = new Point2D(0.7,0.2 );
-        tree.insert(p);
-        p = new Point2D(0.5, 0.4);
-        tree.insert(p);
-        p = new Point2D(.2, .3);
-        tree.insert(p);
-        p = new Point2D(.4, .7);
-        tree.insert(p);
-        p = new Point2D(0.9, 0.6);
-        tree.insert(p);
+    KdTree tree;
 
-        tree.draw();
-    }
-
-    public void test2() {
-        KdTree tree = new KdTree();
+    private void insertTreePrinceton() {
+        tree = new KdTree();
         Point2D p = new Point2D(0.2,0.3 );
         tree.insert(p);
         p = new Point2D(0.1, 0.5);
@@ -32,13 +19,10 @@ public class KdTreeTest {
         tree.insert(p);
         p = new Point2D(0.4, 0.4);
         tree.insert(p);
-
-        tree.draw();
     }
 
-    public void test3Circle10() {
-
-        KdTree tree = new KdTree();
+    private void insertTreeCircle10() {
+        tree = new KdTree();
         Point2D p = new Point2D(0.206107,0.095492 );
         tree.insert(p);
         p = new Point2D(0.975528, 0.654508);
@@ -59,14 +43,40 @@ public class KdTreeTest {
         tree.insert(p);
         p = new Point2D(0.500000, 1.000000);
         tree.insert(p);
+    }
 
+    private void insertTreeAssignmentSample() {
+        tree = new KdTree();
+        Point2D p = new Point2D(0.7,0.2 );
+        tree.insert(p);
+        p = new Point2D(0.5, 0.4);
+        tree.insert(p);
+        p = new Point2D(.2, .3);
+        tree.insert(p);
+        p = new Point2D(.4, .7);
+        tree.insert(p);
+        p = new Point2D(0.9, 0.6);
+        tree.insert(p);
+    }
+
+    public void drawTest() {
+//        insertTreePrinceton();
+//        insertTreeCircle10();
+        insertTreeAssignmentSample();
         tree.draw();
+    }
+
+    public void nearestNeighborSearchTest() {
+//        Point2D p = new Point2D(0.430, 0.130);
+//        insertTreePrinceton();
+        Point2D p = new Point2D(0.812, 0.200);
+        insertTreeCircle10();
+        StdOut.printf("Nearest point to %s, is %s", p, tree.nearest(p));
     }
 
     public static void main(String[] args) {
         KdTreeTest test = new KdTreeTest();
-        test.test3Circle10();
-//        test.test2();
-//        test.test1();
+//        test.drawTest();
+        test.nearestNeighborSearchTest();
     }
 }
