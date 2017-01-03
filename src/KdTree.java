@@ -83,7 +83,7 @@ public class KdTree {
 
             RectHV rect = (evenOrientation ?
                     new RectHV(boundingRect.xmin(), boundingRect.ymin(), node.p.x(), boundingRect.ymax()):  // even - left bounding rectangle
-                    new RectHV(boundingRect.xmin(), boundingRect.ymin(), node.p.x(), node.p.y()));          // odd - bottom bounding rectangle
+                    new RectHV(boundingRect.xmin(), boundingRect.ymin(), boundingRect.xmax(), node.p.y()));          // odd - bottom bounding rectangle
             node.lb = insert(node.lb, p, rect);
         } else if (cmp >= 0) {
             if (evenOrientation)
