@@ -7,13 +7,17 @@ import java.util.Iterator;
 
 public class KdTree {
 
+    // top of KD tree
     private Node root;
+
+    // tree size
+    private int size;
 
     private static class Node {
         private Point2D p;      // the point
         private RectHV rect;    // axis-aligned rectangle corresponding to this node
-        private Node lb;        // left/bottom
-        private Node rt;        // right/top
+        private Node lb;        // left/bottom subtree
+        private Node rt;        // right/top subtree
 
         public Node(Point2D point) {
             p = point;
@@ -27,7 +31,10 @@ public class KdTree {
     /**
      * construct an empty set of points
      */
-    public KdTree() { root = null; }
+    public KdTree() {
+        root = null;
+        size = 0;
+    }
 
     /**
      * is the set empty?
@@ -49,7 +56,8 @@ public class KdTree {
 
     private int size(Node x) {
         if (x == null) return 0;
-        else return 1 + size(x.lb) + size(x.rt);
+        return size;
+//        else return 1 + size(x.lb) + size(x.rt);
     }
 
     /**
@@ -57,45 +65,49 @@ public class KdTree {
      * @param p
      */
     public void insert(Point2D p) {
-        root = insert(root, p, new RectHV(0, 0, 1, 1));
+        root = insert(root, p, new RectHV(0, 0, 1, 1), true);
     }
 
-    private Node insert(Node node, Point2D p, RectHV boundingRect) {
+    private Node insert(Node node, Point2D p, RectHV boundingRect, boolean xCmp) {
         if (node == null) {
-            StdOut.println("created new node " + p + ", bounding rect [" + boundingRect.xmin() + "," + boundingRect.ymin() + "]" + "," +
-                    "[" + boundingRect.xmax() + "," + boundingRect.ymax() + "]\n");
+//            StdOut.println("created new node " + p + ", bounding rect [" + boundingRect.xmin() + "," + boundingRect.ymin() + "]" + "," +
+//                    "[" + boundingRect.xmax() + "," + boundingRect.ymax() + "]");
+            size++;
             return new Node(p, boundingRect);
         }
-        boolean evenOrientation = isEvenLevel(getLevel(root, node.p));
-//        boolean evenOrientation = isEvenLevel(getLevel(root));
-        double cmp = compare(p, node.p, evenOrientation);
+        double cmp = compare(p, node.p, xCmp);
         if (cmp < 0) {
-            if (evenOrientation)
-                StdOut.printf("%s insert LEFT of %s\n", p, node.p);
-            else
-                StdOut.printf("%s insert BOTTOM of %s\n", p, node.p);
-
-            RectHV rect = (evenOrientation ?
-                    new RectHV(boundingRect.xmin(), boundingRect.ymin(), node.p.x(), boundingRect.ymax()):  // LEFT bounding rectangle
-                    new RectHV(boundingRect.xmin(), boundingRect.ymin(), boundingRect.xmax(), node.p.y())); // BOTTOM bounding rectangle
-            node.lb = insert(node.lb, p, rect);
+            RectHV rect = getRect(node, true, xCmp);
+            node.lb = insert(node.lb, p, rect, !xCmp);
         } else if (cmp >= 0) {
-            if (evenOrientation)
-                StdOut.printf("%s insert RIGHT of %s\n", p, node.p);
-            else
-                StdOut.printf("%s insert TOP of %s\n", p, node.p);
-
-            RectHV rect = (evenOrientation ?
-                    new RectHV(node.p.x(), boundingRect.ymin(), boundingRect.xmax(), boundingRect.ymax()):  // RIGHT bounding rectangle
-                    new RectHV(boundingRect.xmin(), node.p.y(), boundingRect.xmax(), boundingRect.ymax())); // TOP bounding rectangle
-            node.rt = insert(node.rt, p, rect);
+            RectHV rect = getRect(node, false, xCmp);
+            node.rt = insert(node.rt, p, rect, !xCmp);
         }
         return node;
     }
 
+    private RectHV getRect(Node node, boolean less, boolean xCmp) {
+        // comparing x's
+        if (xCmp) {
+            if (less)
+                return new RectHV(node.rect.xmin(), node.rect.ymin(), node.p.x(), node.rect.ymax()); // left
+            else
+                return new RectHV(node.p.x(), node.rect.ymin(), node.rect.xmax(), node.rect.ymax()); // right
+        }
+        // comparing y's
+        else {
+            if (less)
+                return new RectHV(node.rect.xmin(), node.rect.ymin(), node.rect.xmax(), node.p.y()); // bottom
+            else
+                return new RectHV(node.rect.xmin(), node.p.y(), node.rect.xmax(), node.rect.ymax()); // top
+        }
+    }
+
     private double compare(Point2D p, Point2D x, boolean even) {
-        if (even) return p.x() - x.x();
-        else return p.y() - x.y();
+        if (even)
+            return p.x() - x.x();
+        else
+            return p.y() - x.y();
     }
 
     private boolean isEvenLevel(int level) { return (level % 2) == 0; }
@@ -106,35 +118,33 @@ public class KdTree {
      * @param p
      * @return
      */
-    public boolean contains(Point2D p) { return search(root, p); }
+    public boolean contains(Point2D p) {
+        return search(p) != null;
+    }
 
-    private boolean search(Node node, Point2D p) {
-        if (node == null) return false;
-        double cmp = compare(p, node.p, isEvenLevel(getLevel(root, node.p)));
-//        double cmp = compare(p, node.p, isEvenLevel(getLevel(root)));
-        if (cmp < 0) return search(node.lb, p);
-        else if (cmp > 0) return search(node.rt, p);
-        else return true;
+    private Point2D search(Point2D p) {
+        if (p == null)
+            return null;
+        return search(root, p, true);
+    }
+
+    private Point2D search(Node node, Point2D p, boolean xCmp) {
+        // base case
+        if (node == null)
+            return null;
+        double cmp = compare(p, node.p, xCmp);
+        if (cmp < 0) {
+            // less go left or bottom
+            return search(node.lb, p, !xCmp);
+        }
+        else if (cmp > 0) {
+            // go right or top
+            return search(node.rt, p, !xCmp);
+        } else
+            return node.p;
     }
 
     private int getLevel(Node x, Point2D p) { return getLevel(x, p, 0); }
-
-    private int height(Node t, Point2D p) {
-        if (t == null) return 0;
-        int hl = height(t.lb, p);
-        int hr = height(t.rt, p);
-        int h = 1 + Math.max(hl, hr);
-        return h;
-    }
-
-//    private int getLevel(Node x, int level) {
-//        if (x == null) return 0;
-//        int downlevel = getLevel(x.lb, level + 1);
-//        if (downlevel != 0)
-//            return downlevel;
-//        downlevel = getLevel(x.rt, level + 1);
-//        return downlevel;
-//    }
 
     private int getLevel(Node x, Point2D p, int level) {
         if (x == null) return 0;
@@ -146,33 +156,33 @@ public class KdTree {
         return downlevel;
     }
 
-    private void inOrderTraversal(Node x) {
-        if (x == null) return;
-        inOrderTraversal(x.lb);
+    private void levelOrderTraversal(Node x) {
+        if (x == null)
+            return;
+
         visit(x);
-        inOrderTraversal(x.rt);
+        levelOrderTraversal(x.lb);
+        levelOrderTraversal(x.rt);
     }
 
     private void visit(Node x) {
-        drawNode(x, isEvenLevel(getLevel(root, x.p)));
+//        drawNode(x, isEvenLevel(getLevel(root, x.p)));
+        drawPoint(x);
     }
 
     private void displayRectangleDistance(Node x, Point2D p) {
-        if (x == null) return;
-        displayRectangleDistance(x.lb, p);
-
         double distance = x.rect.distanceSquaredTo(p);
         StdOut.print("distance from" + " Bounding rect [" + x.rect.xmin() + "," + x.rect.ymin() + "]" + "," +
                 "[" + x.rect.xmax() + "," + x.rect.ymax() + "]");
         StdOut.printf(" (splitting point %s) to %s is %2.6f, distance point  %2.6f\n", x.p, p, distance*10, x.p.distanceSquaredTo(p)*10.0);
         StdOut.printf("%s\n", (distance == 0 ? "Do not prune" : "Prune"));
-
-        displayRectangleDistance(x.rt, p);
     }
 
-    private void drawNode(Node node, boolean even) {
-        if (even) drawVLine(node);
-        else drawHLine(node);
+    private void drawNode(Node node, boolean xCmp) {
+        if (xCmp)
+            drawVLine(node);
+        else
+            drawHLine(node);
         drawPoint(node);
         StdDraw.show();
     }
@@ -197,7 +207,7 @@ public class KdTree {
      *
      */
     public void draw() {
-        inOrderTraversal(root);
+        levelOrderTraversal(root);
     }
 
     /**
@@ -207,54 +217,76 @@ public class KdTree {
      * @return
      */
     public Iterable<Point2D> range(RectHV rect) {
-        //todo -range()
-        return new Iterable<Point2D>() {
-            @Override
-            public Iterator<Point2D> iterator() {
-                return null;
-            }
-        };
+        Stack<Point2D> stack = new Stack<>();
+        range(root, rect, stack);
+        return stack;
+    }
+
+    private void range(Node node, RectHV rect, Stack<Point2D> stack) {
+        // base case
+        if (node == null)
+            return;
+
+        // if the point is contained, add it to the stack
+        if (rect.contains(node.p))
+            stack.push(node.p);
+
+        if (rect.intersects(node.rect)) {
+            range(node.lb, rect, stack);
+            range(node.rt, rect, stack);
+        }
     }
 
     /**
+     *
      * a nearest neighbor in the set to point p;
      * null if the set is empty
      *
      * @param p
      * @return
      */
-    public Point2D nearest(Point2D p) { return nearest(root, p, null, root.p.distanceSquaredTo(p)); }
+    public Point2D nearest(Point2D p) {
+        if (isEmpty())
+            return null;
 
-    private Point2D nearest(Node node, Point2D qp, Point2D nearest, double champion) {
+        // set closest point to top point
+        Point2D closest = root.p;
+        return nearest(root, closest, p, true);
+    }
+
+    private Point2D nearest(Node node, Point2D closest, Point2D p, boolean xCmp) {
 
         // base case
-        if (node == null) return nearest;
+        if (node == null)
+            return closest;
 
-        // calculate the distance
-        double rectDistance = node.rect.distanceSquaredTo(qp);
-        double distance = node.p.distanceSquaredTo(qp);
+        // distance from visiting node's rectangle to query point
+        double distRectToP = node.rect.distanceSquaredTo(p);
 
-        // select champion
-        if (distance < champion) {
-            champion = distance;
-            nearest = node.p;
+        // distance from closest node so far to query point
+        double distClosest = closest.distanceSquaredTo(p);
+
+        // return if closest distance is less than rectangle distance
+        if (distClosest < distRectToP)
+            return closest;
+
+        // creating a new closest so closest does not change
+        Point2D newClosest = closest;
+
+        // if this point is closer than replace closest
+        if (node.p.distanceSquaredTo(p) < distClosest)
+            newClosest = node.p;
+
+        // go down subtree in the correct order depending on which side
+        // the queried point is on
+        if ((p.x() < node.p.x() && xCmp) || (p.y() < node.p.y() && !xCmp)) {
+            newClosest = nearest(node.lb, newClosest, p, !xCmp);
+            newClosest = nearest(node.rt, newClosest, p, !xCmp);
+        } else {
+            newClosest = nearest(node.rt, newClosest, p, !xCmp);
+            newClosest = nearest(node.lb, newClosest, p, !xCmp);
         }
-
-        // The query point is within current node bounding rectangle so keep
-        // searching. Even level - choose subtree either left or right of the
-        // splitting line which is closer to query point. Odd level - choose
-        // subtree either top or bottom of the splitting line which is closer
-        boolean evenOrientation = isEvenLevel(getLevel(root, qp));
-//        boolean evenOrientation = isEvenLevel(getLevel(root));
-        if (rectDistance == 0) {
-            double cmp = compare(qp, node.p, evenOrientation);
-            if (cmp < 0) {
-                return nearest(node.lb, qp, nearest, champion);
-            } else if (cmp > 0) {
-                return nearest(node.rt, qp, nearest, champion);
-            }
-        }
-        return nearest;
+        return newClosest;
     }
 
 

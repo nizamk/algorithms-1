@@ -60,23 +60,24 @@ public class KdTreeTest {
     }
 
     public void drawTest() {
-//        insertTreePrinceton();
+        insertTreePrinceton();
 //        insertTreeCircle10();
-        insertTreeAssignmentSample();
+//        insertTreeAssignmentSample();
         tree.draw();
     }
 
     public void nearestNeighborSearchTest() {
-//        Point2D p = new Point2D(0.430, 0.130);
-//        insertTreePrinceton();
-        Point2D p = new Point2D(0.812, 0.200);
-        insertTreeCircle10();
+        Point2D p = new Point2D(0.450, 0.100);
+//        Point2D p = new Point2D(0.010, 0.010);
+        insertTreePrinceton();
+//        Point2D p = new Point2D(0.81, 0.3);
+//        insertTreeCircle10();
         StdOut.printf("Nearest point to %s, is %s", p, tree.nearest(p));
     }
 
     public static void main(String[] args) {
         KdTreeTest test = new KdTreeTest();
-//        test.drawTest();
-        test.nearestNeighborSearchTest();
+        test.drawTest();
+//        test.nearestNeighborSearchTest();
     }
 }

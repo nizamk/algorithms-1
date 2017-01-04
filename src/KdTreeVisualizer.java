@@ -10,6 +10,7 @@ public class KdTreeVisualizer {
         KdTree kdtree = new KdTree();
         while (true) {
             if (StdDraw.mousePressed()) {
+                StdOut.println("mouse pressed");
                 double x = StdDraw.mouseX();
                 double y = StdDraw.mouseY();
                 StdOut.printf("%8.6f %8.6f\n", x, y);
@@ -22,6 +23,7 @@ public class KdTreeVisualizer {
                     StdDraw.show();
                 }
             }
+
             StdDraw.pause(50);
         }
 

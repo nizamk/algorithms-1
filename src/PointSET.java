@@ -100,7 +100,4 @@ public class PointSET {
             throw new NullPointerException(msg);
     }
 
-    public static void main(String[] args) {
-
-    }
 }
