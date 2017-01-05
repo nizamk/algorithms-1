@@ -10,21 +10,17 @@ public class KdTree {
     // top of KD tree
     private Node root;
 
-    // tree size
-    private int size;
-
     private static class Node {
         private Point2D p;      // the point
         private RectHV rect;    // axis-aligned rectangle corresponding to this node
         private Node lb;        // left/bottom subtree
         private Node rt;        // right/top subtree
+        private int count;
 
-        public Node(Point2D point) {
-            p = point;
-        }
         public Node(Point2D point, RectHV boundingRect) {
             rect = boundingRect;
             p = point;
+            count = 1;
         }
     }
 
@@ -33,7 +29,6 @@ public class KdTree {
      */
     public KdTree() {
         root = null;
-        size = 0;
     }
 
     /**
@@ -56,8 +51,7 @@ public class KdTree {
 
     private int size(Node x) {
         if (x == null) return 0;
-        return size;
-//        else return 1 + size(x.lb) + size(x.rt);
+        return x.count;
     }
 
     /**
@@ -65,30 +59,39 @@ public class KdTree {
      * @param p
      */
     public void insert(Point2D p) {
-        root = insert(root, p, new RectHV(0, 0, 1, 1), true);
+        root = insert(root, null, p, true);
     }
 
-    private Node insert(Node node, Point2D p, RectHV boundingRect, boolean xCmp) {
+    private Node insert(Node node, Node prevNode, Point2D p, boolean xOrientation)
+    {
+        // Base case - create new node to be inserted
         if (node == null) {
-//            StdOut.println("created new node " + p + ", bounding rect [" + boundingRect.xmin() + "," + boundingRect.ymin() + "]" + "," +
-//                    "[" + boundingRect.xmax() + "," + boundingRect.ymax() + "]");
-            size++;
-            return new Node(p, boundingRect);
+            return (root != null) ?
+                    new Node(p, getRect(prevNode, compare(p, prevNode.p, !xOrientation) < 0, !xOrientation)) :
+                    new Node(p, new RectHV(0, 0, 1, 1));
         }
-        double cmp = compare(p, node.p, xCmp);
-        if (cmp < 0) {
-            RectHV rect = getRect(node, true, xCmp);
-            node.lb = insert(node.lb, p, rect, !xCmp);
-        } else if (cmp >= 0) {
-            RectHV rect = getRect(node, false, xCmp);
-            node.rt = insert(node.rt, p, rect, !xCmp);
+
+        double cmp = compare(p, node.p, xOrientation);
+        if (cmp < 0)
+            node.lb = insert(node.lb, node, p, !xOrientation);
+        else if (cmp >= 0)
+            node.rt = insert(node.rt, node, p, !xOrientation);
+
+        // if equal then go right
+        else {
+            cmp = compare(p, node.p, !xOrientation);
+            if (cmp == 0)
+                node.p = p;
+            else
+                node.rt = insert(node.rt, node, p, !xOrientation);
         }
+        node.count = 1 + size(node.lb) + size(node.rt);
         return node;
     }
 
-    private RectHV getRect(Node node, boolean less, boolean xCmp) {
+    private RectHV getRect(Node node, boolean less, boolean xOrientation) {
         // comparing x's
-        if (xCmp) {
+        if (xOrientation) {
             if (less)
                 return new RectHV(node.rect.xmin(), node.rect.ymin(), node.p.x(), node.rect.ymax()); // left
             else
@@ -128,20 +131,24 @@ public class KdTree {
         return search(root, p, true);
     }
 
-    private Point2D search(Node node, Point2D p, boolean xCmp) {
+    private Point2D search(Node node, Point2D p, boolean xOrientation) {
         // base case
         if (node == null)
             return null;
-        double cmp = compare(p, node.p, xCmp);
-        if (cmp < 0) {
-            // less go left or bottom
-            return search(node.lb, p, !xCmp);
+
+        double cmp = compare(p, node.p, xOrientation);
+        if (cmp < 0)
+            return search(node.lb, p, !xOrientation);
+        else if (cmp > 0)
+            return search(node.rt, p, !xOrientation);
+        // if equal then go right
+        else {
+            cmp = compare(p, node.p, !xOrientation);
+            if (cmp == 0)
+                return node.p;
+            else
+                return search(node.rt, p, !xOrientation);
         }
-        else if (cmp > 0) {
-            // go right or top
-            return search(node.rt, p, !xCmp);
-        } else
-            return node.p;
     }
 
     private int getLevel(Node x, Point2D p) { return getLevel(x, p, 0); }
@@ -166,7 +173,7 @@ public class KdTree {
     }
 
     private void visit(Node x) {
-//        drawNode(x, isEvenLevel(getLevel(root, x.p)));
+        drawNode(x, isEvenLevel(getLevel(root, x.p)));
         drawPoint(x);
     }
 
@@ -178,8 +185,8 @@ public class KdTree {
         StdOut.printf("%s\n", (distance == 0 ? "Do not prune" : "Prune"));
     }
 
-    private void drawNode(Node node, boolean xCmp) {
-        if (xCmp)
+    private void drawNode(Node node, boolean xOrientation) {
+        if (xOrientation)
             drawVLine(node);
         else
             drawHLine(node);
@@ -217,23 +224,24 @@ public class KdTree {
      * @return
      */
     public Iterable<Point2D> range(RectHV rect) {
-        Stack<Point2D> stack = new Stack<>();
-        range(root, rect, stack);
-        return stack;
+        SET<Point2D> iter = new SET<>();
+//        Stack<Point2D> stack = new Stack<>();
+        range(root, rect, iter);
+        return iter;
     }
 
-    private void range(Node node, RectHV rect, Stack<Point2D> stack) {
+    private void range(Node node, RectHV rect, SET<Point2D> coll) {
         // base case
         if (node == null)
             return;
 
         // if the point is contained, add it to the stack
         if (rect.contains(node.p))
-            stack.push(node.p);
+            coll.add(node.p);
 
         if (rect.intersects(node.rect)) {
-            range(node.lb, rect, stack);
-            range(node.rt, rect, stack);
+            range(node.lb, rect, coll);
+            range(node.rt, rect, coll);
         }
     }
 
@@ -250,44 +258,42 @@ public class KdTree {
             return null;
 
         // set closest point to top point
-        Point2D closest = root.p;
+        Point2D closest= root.p;
         return nearest(root, closest, p, true);
     }
 
-    private Point2D nearest(Node node, Point2D closest, Point2D p, boolean xCmp) {
-
-        // base case
+    private Point2D nearest(Node node, Point2D closest, Point2D query, boolean xOrientation)
+    {
+        // Base case
         if (node == null)
             return closest;
 
-        // distance from visiting node's rectangle to query point
-        double distRectToP = node.rect.distanceSquaredTo(p);
-
-        // distance from closest node so far to query point
-        double distClosest = closest.distanceSquaredTo(p);
-
-        // return if closest distance is less than rectangle distance
-        if (distClosest < distRectToP)
+        // Important prune rule! - This is to ensure that we can quickly find the
+        // query point without travelling unnecessarily to a subtree which won't
+        // contain the query point. The observation is that if the closest distance
+        // found so far is less than the node's rectangle distance, Then the query
+        // point is outside the node's rectangle and hence the query point is already
+        // farther away. So there is no need to explore the node's subtree any further
+        double rectDistance = node.rect.distanceSquaredTo(query);
+        double closestDistance = closest.distanceSquaredTo(query);
+        if (closestDistance < rectDistance)
             return closest;
 
-        // creating a new closest so closest does not change
-        Point2D newClosest = closest;
+        // Choose a new champion if the node's distance is less than the current champion
+        Point2D newClosest = (node.p.distanceSquaredTo(query) < closestDistance ? node.p : closest);
 
-        // if this point is closer than replace closest
-        if (node.p.distanceSquaredTo(p) < distClosest)
-            newClosest = node.p;
-
-        // go down subtree in the correct order depending on which side
-        // the queried point is on
-        if ((p.x() < node.p.x() && xCmp) || (p.y() < node.p.y() && !xCmp)) {
-            newClosest = nearest(node.lb, newClosest, p, !xCmp);
-            newClosest = nearest(node.rt, newClosest, p, !xCmp);
+        // Go down subtree in the order of which side the query point is on. If query
+        // point is on left or bottom of the current node, then traverse left or bottom
+        // subtree first, followed by right or top subtree. If the query point on the
+        // other side, then traverse in the reverse order
+        if ((xOrientation && query.x() < node.p.x()) ||
+                (!xOrientation && query.y() < node.p.y())) {
+            newClosest = nearest(node.lb, newClosest, query, !xOrientation);
+            newClosest = nearest(node.rt, newClosest, query, !xOrientation);
         } else {
-            newClosest = nearest(node.rt, newClosest, p, !xCmp);
-            newClosest = nearest(node.lb, newClosest, p, !xCmp);
+            newClosest = nearest(node.rt, newClosest, query, !xOrientation);
+            newClosest = nearest(node.lb, newClosest, query, !xOrientation);
         }
         return newClosest;
     }
-
-
 }
